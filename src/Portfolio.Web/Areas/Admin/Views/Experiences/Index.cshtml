@@ -1,0 +1,40 @@
+@model IReadOnlyList<ExperienceListItem>
+@{
+    ViewData["Title"] = "Deneyimler";
+}
+
+<div class="page-head">
+    <p class="muted">İş, staj, eğitim, gönüllülük ve sertifikaların. Sitede zaman çizelgesi olarak gösterilir.</p>
+    <a class="btn btn-primary" asp-action="Create">+ Yeni deneyim</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        <h3>Henüz deneyim yok</h3>
+        <p class="muted">Okulunu, stajını ya da ilk işini ekleyerek zaman çizelgeni oluştur.</p>
+    </div>
+}
+else
+{
+    <ol class="admin-timeline">
+        @foreach (var e in Model)
+        {
+            <li class="card timeline-item @(e.EndDate is null ? "current" : "")">
+                <div class="timeline-dot" aria-hidden="true"></div>
+                <div class="timeline-body">
+                    <div class="timeline-meta">
+                        <span class="badge">@DisplayText.Label(e.Type)</span>
+                        <span class="muted small">@DisplayText.Period(e.StartDate, e.EndDate)</span>
+                    </div>
+                    <a class="row-title" asp-action="Edit" asp-route-id="@e.Id">@e.Title</a>
+                    <p class="muted">@e.Organization@(e.Location is null ? "" : $" · {e.Location}")</p>
+                </div>
+                <div class="actions">
+                    <partial name="_EditLink" model="e.Id" />
+                    <partial name="_DeleteButton" model='("Experiences", e.Id, $"“{e.Title} – {e.Organization}” silinecek.")' />
+                </div>
+            </li>
+        }
+    </ol>
+}

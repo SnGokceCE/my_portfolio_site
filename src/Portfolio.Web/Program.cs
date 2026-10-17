@@ -1,7 +1,12 @@
+using System.Globalization;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.FileProviders;
 using Portfolio.Application;
 using Portfolio.Infrastructure;
 using Portfolio.Infrastructure.Persistence.Seeding;
+using Portfolio.Infrastructure.Storage;
+using Portfolio.Web.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +26,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Doğrulamayı FluentValidation yapıyor; MVC'nin "nullable olmayan = zorunlu" kuralı
+    // İngilizce ve tekrarlı hata üretmesin.
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    TurkishModelBindingMessages.Apply(options.ModelBindingMessageProvider);
+});
 
 // Reverse proxy (Docker, bulut sağlayıcı) arkasında gerçek şema/IP bilgisini almak için.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -41,6 +52,14 @@ if (app.Configuration.GetValue("Database:MigrateOnStartup", defaultValue: app.En
 
 app.UseForwardedHeaders();
 
+var turkish = CultureInfo.GetCultureInfo("tr-TR");
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(turkish),
+    SupportedCultures = [turkish],
+    SupportedUICultures = [turkish]
+});
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/home/error");
@@ -49,6 +68,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStatusCodePagesWithReExecute("/home/status/{0}");
 app.UseHttpsRedirection();
+
+// Yüklenen dosyalar derleme zamanında bilinmediği için MapStaticAssets yerine UseStaticFiles ile sunulur.
+var storage = app.Services.GetRequiredService<LocalFileStorage>();
+var storageOptions = app.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>() ?? new StorageOptions();
+Directory.CreateDirectory(storage.RootPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(storage.RootPath),
+    RequestPath = storageOptions.RequestPath,
+    OnPrepareResponse = ctx => ctx.Context.Response.Headers.XContentTypeOptions = "nosniff"
+});
+
 app.UseRouting();
 
 app.UseAuthentication();

@@ -1,0 +1,7 @@
+@model bool
+@* Model: kayıt yeni mi? *@
+
+<div class="form-actions">
+    <a class="btn btn-ghost" asp-action="Index">Vazgeç</a>
+    <button type="submit" class="btn btn-primary">@(Model ? "Oluştur" : "Kaydet")</button>
+</div>

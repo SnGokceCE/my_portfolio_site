@@ -1,0 +1,48 @@
+@model IReadOnlyList<CategoryListItem>
+@{
+    ViewData["Title"] = "Kategoriler";
+}
+
+<div class="page-head">
+    <p class="muted">Projelerini gruplamak için kendi kategorilerini oluştur (ör. Web, Mobil, Tasarım, Veri).</p>
+    <a class="btn btn-primary" asp-action="Create">+ Yeni kategori</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        <h3>Henüz kategori yok</h3>
+        <p class="muted">İlk kategorini ekleyerek başla.</p>
+    </div>
+}
+else
+{
+    <div class="card table-card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ad</th>
+                    <th>Adres</th>
+                    <th class="num">Sıra</th>
+                    <th class="num">Proje</th>
+                    <th class="actions"><span class="sr-only">İşlemler</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td><a class="row-title" asp-action="Edit" asp-route-id="@c.Id">@c.Name</a></td>
+                        <td><code class="slug">/@c.Slug</code></td>
+                        <td class="num">@c.SortOrder</td>
+                        <td class="num">@c.ProjectCount</td>
+                        <td class="actions">
+                            <partial name="_EditLink" model="c.Id" />
+                            <partial name="_DeleteButton" model='("Categories", c.Id, $"“{c.Name}” silinecek. Bu kategorideki {c.ProjectCount} proje kategorisiz kalacak.")' />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

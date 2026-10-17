@@ -1,0 +1,66 @@
+@model FormViewModel<SiteProfileInput>
+@{
+    ViewData["Title"] = "Profil";
+}
+
+<form method="post" class="form" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-error" role="alert"></div>
+
+    <section class="card form-card">
+        <h2 class="form-card-title">Kimlik</h2>
+        <p class="muted">Ana sayfadaki karşılama bölümünde ve sayfa başlıklarında kullanılır.</p>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Input.FullName">Ad soyad</label>
+                <input asp-for="Input.FullName" maxlength="@SiteProfile.FullNameMaxLength" autocomplete="name" />
+                <span asp-validation-for="Input.FullName" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.Location">Konum</label>
+                <input asp-for="Input.Location" maxlength="@SiteProfile.FullNameMaxLength" placeholder="ör. İstanbul, Türkiye" />
+                <span asp-validation-for="Input.Location" class="field-error"></span>
+            </div>
+        </div>
+        <div class="field">
+            <label asp-for="Input.Headline">Unvan / slogan</label>
+            <input asp-for="Input.Headline" maxlength="@SiteProfile.HeadlineMaxLength" data-counter placeholder="ör. Bilgisayar Mühendisliği öğrencisi · Full-stack geliştirici" />
+            <span asp-validation-for="Input.Headline" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.Bio">Kısa biyografi</label>
+            <textarea asp-for="Input.Bio" rows="5" maxlength="@SiteProfile.BioMaxLength" data-counter></textarea>
+            <span asp-validation-for="Input.Bio" class="field-error"></span>
+        </div>
+        <label class="switch">
+            <input asp-for="Input.IsOpenToWork" />
+            <span class="switch-track" aria-hidden="true"></span>
+            <span>“Yeni fırsatlara açığım” rozetini göster</span>
+        </label>
+    </section>
+
+    <section class="card form-card">
+        <h2 class="form-card-title">İletişim ve bağlantılar</h2>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Input.Email">E-posta</label>
+                <input asp-for="Input.Email" type="email" autocomplete="email" placeholder="Sitede herkese açık görünür" />
+                <span asp-validation-for="Input.Email" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.GitHubUrl">GitHub</label>
+                <input asp-for="Input.GitHubUrl" type="url" placeholder="https://github.com/kullanici-adi" />
+                <span asp-validation-for="Input.GitHubUrl" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.LinkedInUrl">LinkedIn</label>
+                <input asp-for="Input.LinkedInUrl" type="url" placeholder="https://linkedin.com/in/kullanici-adi" />
+                <span asp-validation-for="Input.LinkedInUrl" class="field-error"></span>
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <a class="btn btn-ghost" asp-area="" asp-controller="Home" asp-action="Index" target="_blank">Siteyi görüntüle ↗</a>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+    </div>
+</form>

@@ -1,0 +1,130 @@
+@model ProjectIndexViewModel
+@{
+    ViewData["Title"] = "Projeler";
+    var q = Model.Query;
+    var list = Model.Projects;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+
+    string StatusUrl(ProjectStatusFilter status) =>
+        Url.Action("Index", new { search = q.Search, categoryId = q.CategoryId, status })!;
+}
+
+<div class="page-head">
+    <nav class="tabs" aria-label="Duruma göre filtrele">
+        <a class="@(q.Status == ProjectStatusFilter.All ? "active" : "")" href="@StatusUrl(ProjectStatusFilter.All)">Tümü</a>
+        <a class="@(q.Status == ProjectStatusFilter.Published ? "active" : "")" href="@StatusUrl(ProjectStatusFilter.Published)">Yayında</a>
+        <a class="@(q.Status == ProjectStatusFilter.Draft ? "active" : "")" href="@StatusUrl(ProjectStatusFilter.Draft)">Taslak</a>
+    </nav>
+    <a class="btn btn-primary" asp-action="Create">+ Yeni proje</a>
+</div>
+
+<form method="get" class="toolbar" role="search">
+    <input type="hidden" name="status" value="@q.Status" />
+    <div class="search-field">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <input type="search" name="search" value="@q.Search" placeholder="Başlık veya özette ara…" aria-label="Ara" />
+    </div>
+    <select name="categoryId" aria-label="Kategori" data-autosubmit>
+        <option value="">Tüm kategoriler</option>
+        @foreach (var c in Model.Categories)
+        {
+            <option value="@c.Id" selected="@(q.CategoryId == c.Id)">@c.Name</option>
+        }
+    </select>
+    <button type="submit" class="btn btn-ghost">Filtrele</button>
+</form>
+
+@if (list.TotalCount == 0)
+{
+    <div class="empty-state">
+        @if (string.IsNullOrWhiteSpace(q.Search) && q.CategoryId is null && q.Status == ProjectStatusFilter.All)
+        {
+            <h3>Henüz proje yok</h3>
+            <p class="muted">İlk projeni ekle; taslak olarak kaydedip hazır olduğunda yayımlayabilirsin.</p>
+            <a class="btn btn-primary" asp-action="Create">+ Yeni proje</a>
+        }
+        else
+        {
+            <h3>Sonuç bulunamadı</h3>
+            <p class="muted">Filtreleri değiştirmeyi dene.</p>
+            <a class="btn btn-ghost" asp-action="Index">Filtreleri temizle</a>
+        }
+    </div>
+}
+else
+{
+    <div class="card table-card">
+        <table class="table table-projects">
+            <thead>
+                <tr>
+                    <th>Proje</th>
+                    <th>Kategori</th>
+                    <th>Durum</th>
+                    <th>Son güncelleme</th>
+                    <th class="actions"><span class="sr-only">İşlemler</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in list.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="row-with-thumb">
+                                @if (p.CoverImageUrl is not null)
+                                {
+                                    <img class="thumb" src="@p.CoverImageUrl" alt="" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span class="thumb thumb-empty" aria-hidden="true">@p.Title[..1]</span>
+                                }
+                                <div>
+                                    <a class="row-title" asp-action="Edit" asp-route-id="@p.Id">@p.Title</a>
+                                    @if (p.IsFeatured)
+                                    {
+                                        <span class="star" title="Öne çıkan">★</span>
+                                    }
+                                    <div class="muted small"><code class="slug">/projeler/@p.Slug</code> · @p.SkillCount teknoloji</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@(p.CategoryName ?? "—")</td>
+                        <td>
+                            <span class="status @(p.IsPublished ? "status-live" : "status-draft")">@(p.IsPublished ? "Yayında" : "Taslak")</span>
+                        </td>
+                        <td class="muted small">@DisplayText.Date(p.LastModified)</td>
+                        <td class="actions">
+                            <form asp-action="Publish" asp-route-id="@p.Id" method="post">
+                                <input type="hidden" name="published" value="@(!p.IsPublished)" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <button type="submit" class="icon-btn icon-btn-sm" title="@(p.IsPublished ? "Taslağa al" : "Yayımla")" aria-label="@(p.IsPublished ? "Taslağa al" : "Yayımla")">
+                                    @if (p.IsPublished)
+                                    {
+                                        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.9 17.9A10 10 0 0 1 12 20c-7 0-10-8-10-8a18 18 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.2 3.2M1 1l22 22" /></svg>
+                                    }
+                                    else
+                                    {
+                                        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                                    }
+                                </button>
+                            </form>
+                            <partial name="_EditLink" model="p.Id" />
+                            <partial name="_DeleteButton" model='("Projects", p.Id, $"“{p.Title}” ve kapak görseli kalıcı olarak silinecek.")' />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (list.TotalPages > 1)
+    {
+        <nav class="pagination" aria-label="Sayfalar">
+            <a class="btn btn-ghost btn-sm @(list.HasPrevious ? "" : "disabled")"
+               href="@(list.HasPrevious ? Url.Action("Index", new { search = q.Search, categoryId = q.CategoryId, status = q.Status, page = list.Page - 1 }) : null)">← Önceki</a>
+            <span class="muted small">Sayfa @list.Page / @list.TotalPages · @list.TotalCount proje</span>
+            <a class="btn btn-ghost btn-sm @(list.HasNext ? "" : "disabled")"
+               href="@(list.HasNext ? Url.Action("Index", new { search = q.Search, categoryId = q.CategoryId, status = q.Status, page = list.Page + 1 }) : null)">Sonraki →</a>
+        </nav>
+    }
+}

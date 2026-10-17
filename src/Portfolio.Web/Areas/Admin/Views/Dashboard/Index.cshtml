@@ -1,38 +1,65 @@
-@model SiteProfileDto
+@model DashboardStats
 @{
     ViewData["Title"] = "Pano";
+    var profile = (SiteProfileDto)ViewData["Profile"]!;
 }
 
 <div class="admin-grid">
     <section class="card welcome-card">
         <p class="eyebrow">Hoş geldin</p>
-        <h2>@Model.FullName</h2>
-        <p class="muted">@Model.Headline</p>
+        <h2>@profile.FullName</h2>
+        <p class="muted">@profile.Headline</p>
+        <div class="quick-actions">
+            <a class="btn btn-primary btn-sm" asp-controller="Projects" asp-action="Create">+ Yeni proje</a>
+            <a class="btn btn-ghost btn-sm" asp-controller="Experiences" asp-action="Create">+ Deneyim</a>
+            <a class="btn btn-ghost btn-sm" asp-controller="Profile" asp-action="Index">Profili düzenle</a>
+        </div>
     </section>
 
-    <section class="card stat-card">
+    <a class="card stat-card" asp-controller="Projects" asp-action="Index">
         <p class="muted">Projeler</p>
-        <p class="stat-value">0</p>
-        <p class="muted small">2. aşamada eklenecek</p>
-    </section>
+        <p class="stat-value">@Model.ProjectCount</p>
+        <p class="muted small">@Model.PublishedProjectCount yayında · @Model.DraftProjectCount taslak</p>
+    </a>
 
-    <section class="card stat-card">
-        <p class="muted">Blog yazıları</p>
-        <p class="stat-value">0</p>
-        <p class="muted small">4. aşamada eklenecek</p>
-    </section>
+    <a class="card stat-card" asp-controller="Experiences" asp-action="Index">
+        <p class="muted">Deneyimler</p>
+        <p class="stat-value">@Model.ExperienceCount</p>
+        <p class="muted small">Zaman çizelgesindeki kayıtlar</p>
+    </a>
 
-    <section class="card stat-card">
-        <p class="muted">Mesajlar</p>
-        <p class="stat-value">0</p>
-        <p class="muted small">4. aşamada eklenecek</p>
+    <a class="card stat-card" asp-controller="Skills" asp-action="Index">
+        <p class="muted">Yetenekler</p>
+        <p class="stat-value">@Model.SkillCount</p>
+        <p class="muted small">@Model.CategoryCount kategori tanımlı</p>
+    </a>
+
+    <section class="card recent-card">
+        <h3>Son düzenlenen projeler</h3>
+        @if (Model.RecentProjects.Count == 0)
+        {
+            <p class="muted">Henüz proje yok.</p>
+        }
+        else
+        {
+            <ul class="recent-list">
+                @foreach (var p in Model.RecentProjects)
+                {
+                    <li>
+                        <a asp-controller="Projects" asp-action="Edit" asp-route-id="@p.Id">@p.Title</a>
+                        <span class="status @(p.IsPublished ? "status-live" : "status-draft")">@(p.IsPublished ? "Yayında" : "Taslak")</span>
+                        <span class="muted small">@DisplayText.Date(p.LastModified)</span>
+                    </li>
+                }
+            </ul>
+        }
     </section>
 
     <section class="card roadmap-card">
         <h3>Yol haritası</h3>
         <ol class="roadmap">
             <li class="done">İskelet: katmanlı mimari, veritabanı, kimlik doğrulama, tema</li>
-            <li>İçerik modeli ve admin CRUD (projeler, deneyimler, yetenekler)</li>
+            <li class="done">İçerik modeli ve admin CRUD (projeler, deneyimler, yetenekler)</li>
             <li>Ziyaretçi sitesi: proje listesi, detaylar, zaman çizelgesi</li>
             <li>Blog (Markdown) ve iletişim formu</li>
             <li>Çoklu dil, SEO, GitHub entegrasyonu, istatistikler</li>

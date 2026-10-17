@@ -12,6 +12,14 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 {
     public DbSet<SiteProfile> SiteProfiles => Set<SiteProfile>();
 
+    public DbSet<Project> Projects => Set<Project>();
+
+    public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<Skill> Skills => Set<Skill>();
+
+    public DbSet<Experience> Experiences => Set<Experience>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

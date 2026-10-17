@@ -11,7 +11,7 @@ public sealed class SiteProfile : BaseEntity
     public const int FullNameMaxLength = 100;
     public const int HeadlineMaxLength = 160;
     public const int BioMaxLength = 2000;
-    public const int UrlMaxLength = 300;
+    public const int UrlMaxLength = Guard.UrlMaxLength;
 
     // EF Core için
     private SiteProfile()
@@ -42,55 +42,20 @@ public sealed class SiteProfile : BaseEntity
 
     public bool IsOpenToWork { get; private set; }
 
-    public void UpdateIdentity(string fullName, string headline, string bio)
+    public void UpdateIdentity(string fullName, string headline, string? bio)
     {
-        FullName = Require(fullName, nameof(FullName), FullNameMaxLength);
-        Headline = Require(headline, nameof(Headline), HeadlineMaxLength);
-        Bio = Limit(bio.Trim(), nameof(Bio), BioMaxLength);
+        FullName = Guard.Required(fullName, nameof(FullName), FullNameMaxLength);
+        Headline = Guard.Required(headline, nameof(Headline), HeadlineMaxLength);
+        Bio = Guard.Optional(bio, nameof(Bio), BioMaxLength) ?? string.Empty;
     }
 
     public void UpdateContact(string? location, string? email, string? gitHubUrl, string? linkedInUrl)
     {
-        Location = Optional(location, nameof(Location), FullNameMaxLength);
-        Email = Optional(email, nameof(Email), UrlMaxLength);
-        GitHubUrl = OptionalUrl(gitHubUrl, nameof(GitHubUrl));
-        LinkedInUrl = OptionalUrl(linkedInUrl, nameof(LinkedInUrl));
+        Location = Guard.Optional(location, nameof(Location), FullNameMaxLength);
+        Email = Guard.Optional(email, nameof(Email), UrlMaxLength);
+        GitHubUrl = Guard.OptionalUrl(gitHubUrl, nameof(GitHubUrl));
+        LinkedInUrl = Guard.OptionalUrl(linkedInUrl, nameof(LinkedInUrl));
     }
 
     public void SetOpenToWork(bool isOpen) => IsOpenToWork = isOpen;
-
-    private static string Require(string? value, string field, int maxLength)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new DomainException($"{field} boş olamaz.");
-        }
-
-        return Limit(value.Trim(), field, maxLength);
-    }
-
-    private static string? Optional(string? value, string field, int maxLength) =>
-        string.IsNullOrWhiteSpace(value) ? null : Limit(value.Trim(), field, maxLength);
-
-    private static string? OptionalUrl(string? value, string field)
-    {
-        var url = Optional(value, field, UrlMaxLength);
-        if (url is null)
-        {
-            return null;
-        }
-
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
-        {
-            throw new DomainException($"{field} geçerli bir http(s) adresi olmalı.");
-        }
-
-        return url;
-    }
-
-    private static string Limit(string value, string field, int maxLength) =>
-        value.Length > maxLength
-            ? throw new DomainException($"{field} en fazla {maxLength} karakter olabilir.")
-            : value;
 }

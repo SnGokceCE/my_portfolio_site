@@ -7,6 +7,7 @@ using Portfolio.Infrastructure.Identity;
 using Portfolio.Infrastructure.Persistence;
 using Portfolio.Infrastructure.Persistence.Interceptors;
 using Portfolio.Infrastructure.Persistence.Seeding;
+using Portfolio.Infrastructure.Storage;
 
 namespace Portfolio.Infrastructure;
 
@@ -37,6 +38,10 @@ public static class DependencyInjection
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+
+        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        services.AddSingleton<LocalFileStorage>();
+        services.AddSingleton<IFileStorage>(sp => sp.GetRequiredService<LocalFileStorage>());
 
         services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
         services.AddScoped<DatabaseInitializer>();

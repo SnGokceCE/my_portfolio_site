@@ -1,0 +1,63 @@
+@model IReadOnlyList<SkillListItem>
+@{
+    ViewData["Title"] = "Yetenekler";
+    var groups = Model.GroupBy(s => s.Group ?? "Diğer");
+}
+
+<div class="page-head">
+    <p class="muted">Bildiğin teknolojiler, araçlar ve yetkinlikler. Projelere “kullanılan teknolojiler” olarak bağlanabilir.</p>
+    <a class="btn btn-primary" asp-action="Create">+ Yeni yetenek</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        <h3>Henüz yetenek yok</h3>
+        <p class="muted">C#, Figma, PostgreSQL gibi yeteneklerini ekleyerek başla.</p>
+    </div>
+}
+else
+{
+    <div class="skill-groups">
+        @foreach (var group in groups)
+        {
+            <section class="card table-card">
+                <header class="table-card-head">
+                    <h2>@group.Key</h2>
+                    <span class="badge">@group.Count()</span>
+                </header>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ad</th>
+                            <th>Seviye</th>
+                            <th class="num">Proje</th>
+                            <th class="actions"><span class="sr-only">İşlemler</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in group)
+                        {
+                            <tr>
+                                <td><a class="row-title" asp-action="Edit" asp-route-id="@s.Id">@s.Name</a></td>
+                                <td>
+                                    <span class="level" title="@DisplayText.Level(s.Level)" aria-label="Seviye: @DisplayText.Level(s.Level)">
+                                        @for (var i = 1; i <= Skill.MaxLevel; i++)
+                                        {
+                                            <span class="@(i <= s.Level ? "on" : "")"></span>
+                                        }
+                                    </span>
+                                </td>
+                                <td class="num">@s.ProjectCount</td>
+                                <td class="actions">
+                                    <partial name="_EditLink" model="s.Id" />
+                                    <partial name="_DeleteButton" model='("Skills", s.Id, $"“{s.Name}” silinecek ve {s.ProjectCount} projeden kaldırılacak.")' />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+    </div>
+}

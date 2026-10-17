@@ -1,0 +1,35 @@
+@model FormViewModel<CategoryInput>
+@{
+    ViewData["Title"] = Model.IsNew ? "Yeni kategori" : "Kategoriyi düzenle";
+}
+
+<form method="post" asp-action="@(Model.IsNew ? "Create" : "Edit")" asp-route-id="@Model.Id" class="form form-narrow" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-error" role="alert"></div>
+
+    <section class="card form-card">
+        <div class="field">
+            <label asp-for="Input.Name">Ad</label>
+            <input asp-for="Input.Name" data-slug-source maxlength="@Category.NameMaxLength" />
+            <span asp-validation-for="Input.Name" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="Input.Slug">Adres (slug)</label>
+            <div class="input-prefix">
+                <span>/kategori/</span>
+                <input asp-for="Input.Slug" data-slug-target placeholder="otomatik oluşturulur" />
+            </div>
+            <span class="hint">Boş bırakırsan addan otomatik üretilir.</span>
+            <span asp-validation-for="Input.Slug" class="field-error"></span>
+        </div>
+
+        <div class="field field-sm">
+            <label asp-for="Input.SortOrder">Sıra</label>
+            <input asp-for="Input.SortOrder" type="number" />
+            <span class="hint">Küçük sayılar önce gösterilir.</span>
+            <span asp-validation-for="Input.SortOrder" class="field-error"></span>
+        </div>
+    </section>
+
+    <partial name="_FormActions" model="Model.IsNew" />
+</form>

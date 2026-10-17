@@ -1,0 +1,85 @@
+@model FormViewModel<ExperienceInput>
+@{
+    ViewData["Title"] = Model.IsNew ? "Yeni deneyim" : "Deneyimi düzenle";
+}
+
+<form method="post" asp-action="@(Model.IsNew ? "Create" : "Edit")" asp-route-id="@Model.Id" class="form" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-error" role="alert"></div>
+
+    <section class="card form-card">
+        <h2 class="form-card-title">Temel bilgiler</h2>
+
+        <fieldset class="field">
+            <legend>Tür</legend>
+            <div class="segmented">
+                @foreach (var (value, label) in DisplayText.ExperienceTypes)
+                {
+                    <label>
+                        <input type="radio" name="Input.Type" value="@value" checked="@(Model.Input.Type == value)" />
+                        <span>@label</span>
+                    </label>
+                }
+            </div>
+            <span asp-validation-for="Input.Type" class="field-error"></span>
+        </fieldset>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Input.Title">Başlık</label>
+                <input asp-for="Input.Title" maxlength="@Experience.TitleMaxLength" placeholder="ör. Yazılım Stajyeri, Bilgisayar Mühendisliği" />
+                <span asp-validation-for="Input.Title" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.Organization">Kurum</label>
+                <input asp-for="Input.Organization" maxlength="@Experience.OrganizationMaxLength" placeholder="ör. Şirket ya da üniversite adı" />
+                <span asp-validation-for="Input.Organization" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.Location">Konum</label>
+                <input asp-for="Input.Location" maxlength="@Experience.LocationMaxLength" placeholder="ör. İstanbul · Uzaktan" />
+                <span asp-validation-for="Input.Location" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.Url">Bağlantı</label>
+                <input asp-for="Input.Url" type="url" placeholder="https://" />
+                <span asp-validation-for="Input.Url" class="field-error"></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="card form-card">
+        <h2 class="form-card-title">Tarihler</h2>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Input.StartDate">Başlangıç</label>
+                <input asp-for="Input.StartDate" type="date" />
+                <span asp-validation-for="Input.StartDate" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.EndDate">Bitiş</label>
+                <input asp-for="Input.EndDate" type="date" data-end-date />
+                <label class="checkbox">
+                    <input type="checkbox" data-ongoing @(Model.Input.EndDate is null && !Model.IsNew ? "checked" : "") />
+                    <span>Hâlâ devam ediyor</span>
+                </label>
+                <span asp-validation-for="Input.EndDate" class="field-error"></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="card form-card">
+        <h2 class="form-card-title">Açıklama</h2>
+        <div class="field">
+            <label asp-for="Input.Description">Neler yaptın, neler öğrendin?</label>
+            <textarea asp-for="Input.Description" rows="6" maxlength="@Experience.DescriptionMaxLength" data-counter></textarea>
+            <span asp-validation-for="Input.Description" class="field-error"></span>
+        </div>
+        <div class="field field-sm">
+            <label asp-for="Input.SortOrder">Sıra</label>
+            <input asp-for="Input.SortOrder" type="number" />
+            <span class="hint">Aynı tarihli kayıtları sıralamak için.</span>
+        </div>
+    </section>
+
+    <partial name="_FormActions" model="Model.IsNew" />
+</form>

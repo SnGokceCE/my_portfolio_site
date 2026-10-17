@@ -1,0 +1,16 @@
+@if (TempData[AdminController.FlashMessageKey] is string message)
+{
+    var kind = TempData[AdminController.FlashKindKey] as string ?? "success";
+    <div class="flash flash-@kind" role="status" data-flash>
+        @if (kind == "success")
+        {
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+        }
+        else
+        {
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4M12 16h.01" /><circle cx="12" cy="12" r="9" /></svg>
+        }
+        <span>@message</span>
+        <button type="button" class="flash-close" data-flash-close aria-label="Kapat">×</button>
+    </div>
+}

@@ -1,0 +1,51 @@
+@model SkillFormViewModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Yeni yetenek" : "Yeteneği düzenle";
+}
+
+<form method="post" asp-action="@(Model.IsNew ? "Create" : "Edit")" asp-route-id="@Model.Id" class="form form-narrow" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-error" role="alert"></div>
+
+    <section class="card form-card">
+        <div class="field">
+            <label asp-for="Input.Name">Ad</label>
+            <input asp-for="Input.Name" maxlength="@Skill.NameMaxLength" placeholder="ör. C#" />
+            <span asp-validation-for="Input.Name" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="Input.Group">Grup</label>
+            <input asp-for="Input.Group" list="skill-groups" maxlength="@Skill.GroupMaxLength" placeholder="ör. Backend, Tasarım, Araçlar" />
+            <datalist id="skill-groups">
+                @foreach (var g in Model.Groups)
+                {
+                    <option value="@g"></option>
+                }
+            </datalist>
+            <span class="hint">Yetenekler sitede bu gruplara göre listelenir.</span>
+            <span asp-validation-for="Input.Group" class="field-error"></span>
+        </div>
+
+        <fieldset class="field">
+            <legend>Seviye</legend>
+            <div class="segmented">
+                @for (var level = Skill.MinLevel; level <= Skill.MaxLevel; level++)
+                {
+                    <label>
+                        <input type="radio" name="Input.Level" value="@level" checked="@(Model.Input.Level == level)" />
+                        <span>@DisplayText.Level(level)</span>
+                    </label>
+                }
+            </div>
+            <span asp-validation-for="Input.Level" class="field-error"></span>
+        </fieldset>
+
+        <div class="field field-sm">
+            <label asp-for="Input.SortOrder">Sıra</label>
+            <input asp-for="Input.SortOrder" type="number" />
+            <span asp-validation-for="Input.SortOrder" class="field-error"></span>
+        </div>
+    </section>
+
+    <partial name="_FormActions" model="Model.IsNew" />
+</form>

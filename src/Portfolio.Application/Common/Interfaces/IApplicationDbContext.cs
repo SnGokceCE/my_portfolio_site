@@ -12,5 +12,13 @@ public interface IApplicationDbContext
 {
     DbSet<SiteProfile> SiteProfiles { get; }
 
+    DbSet<Project> Projects { get; }
+
+    DbSet<Category> Categories { get; }
+
+    DbSet<Skill> Skills { get; }
+
+    DbSet<Experience> Experiences { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

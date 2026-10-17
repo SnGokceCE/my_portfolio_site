@@ -1,0 +1,160 @@
+@model ProjectFormViewModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Yeni proje" : Model.Input.Title;
+    var selectedSkills = Model.Input.SkillIds.ToHashSet();
+}
+
+<form method="post" enctype="multipart/form-data" asp-action="@(Model.IsNew ? "Create" : "Edit")" asp-route-id="@Model.Id" class="form editor" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-error editor-full" role="alert"></div>
+
+    <div class="editor-main">
+        <section class="card form-card">
+            <div class="field">
+                <label asp-for="Input.Title">Başlık</label>
+                <input asp-for="Input.Title" class="input-lg" data-slug-source maxlength="@Project.TitleMaxLength" placeholder="Projenin adı" />
+                <span asp-validation-for="Input.Title" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Input.Slug">Adres (slug)</label>
+                <div class="input-prefix">
+                    <span>/projeler/</span>
+                    <input asp-for="Input.Slug" data-slug-target placeholder="otomatik oluşturulur" />
+                </div>
+                <span asp-validation-for="Input.Slug" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Input.Summary">Kısa özet</label>
+                <textarea asp-for="Input.Summary" rows="3" maxlength="@Project.SummaryMaxLength" data-counter placeholder="Kartlarda görünecek bir-iki cümlelik açıklama"></textarea>
+                <span asp-validation-for="Input.Summary" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Input.Body">Detaylı içerik <span class="muted">(Markdown)</span></label>
+                <textarea asp-for="Input.Body" rows="16" class="mono" placeholder="## Problem&#10;Ne çözmek istedin?&#10;&#10;## Çözüm&#10;Nasıl yaptın, hangi kararları verdin?&#10;&#10;## Sonuç&#10;Ne öğrendin?"></textarea>
+                <span class="hint">Başlık için <code>##</code>, kalın için <code>**metin**</code>, bağlantı için <code>[metin](https://...)</code>.</span>
+                <span asp-validation-for="Input.Body" class="field-error"></span>
+            </div>
+        </section>
+
+        <section class="card form-card">
+            <h2 class="form-card-title">Kullanılan teknolojiler</h2>
+            @if (Model.Skills.Count == 0)
+            {
+                <p class="muted">Henüz yetenek eklenmemiş. <a class="link" asp-controller="Skills" asp-action="Create">Yetenek ekle</a></p>
+            }
+            else
+            {
+                <div class="chips">
+                    @foreach (var s in Model.Skills)
+                    {
+                        <label class="chip">
+                            <input type="checkbox" name="Input.SkillIds" value="@s.Id" checked="@selectedSkills.Contains(s.Id)" />
+                            <span>@s.Name</span>
+                        </label>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="card form-card">
+            <h2 class="form-card-title">Bağlantılar ve tarihler</h2>
+            <div class="form-grid">
+                <div class="field">
+                    <label asp-for="Input.RepositoryUrl">Kaynak kod</label>
+                    <input asp-for="Input.RepositoryUrl" type="url" placeholder="https://github.com/..." />
+                    <span asp-validation-for="Input.RepositoryUrl" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Input.LiveUrl">Canlı adres</label>
+                    <input asp-for="Input.LiveUrl" type="url" placeholder="https://" />
+                    <span asp-validation-for="Input.LiveUrl" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Input.StartedOn">Başlangıç</label>
+                    <input asp-for="Input.StartedOn" type="date" />
+                    <span asp-validation-for="Input.StartedOn" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Input.CompletedOn">Bitiş</label>
+                    <input asp-for="Input.CompletedOn" type="date" />
+                    <span asp-validation-for="Input.CompletedOn" class="field-error"></span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <aside class="editor-side">
+        <section class="card form-card">
+            <h2 class="form-card-title">Yayın</h2>
+            <label class="switch">
+                <input asp-for="Input.IsPublished" />
+                <span class="switch-track" aria-hidden="true"></span>
+                <span>Yayında</span>
+            </label>
+            <label class="switch">
+                <input asp-for="Input.IsFeatured" />
+                <span class="switch-track" aria-hidden="true"></span>
+                <span>Öne çıkar</span>
+            </label>
+            <p class="hint">Taslaklar ziyaretçilere görünmez. Öne çıkan projeler ana sayfada gösterilir.</p>
+            <button type="submit" class="btn btn-primary btn-block">@(Model.IsNew ? "Projeyi oluştur" : "Değişiklikleri kaydet")</button>
+            <a class="btn btn-ghost btn-block" asp-action="Index">Listeye dön</a>
+        </section>
+
+        <section class="card form-card">
+            <h2 class="form-card-title">Kapak görseli</h2>
+            <div class="dropzone" data-dropzone>
+                <img src="@Model.CoverImageUrl" alt="Kapak önizlemesi" data-preview @(Model.CoverImageUrl is null ? "hidden" : "") />
+                <div class="dropzone-empty" data-preview-empty @(Model.CoverImageUrl is null ? "" : "hidden")>
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                    <span>Görsel seç veya buraya sürükle</span>
+                    <span class="hint">JPG, PNG, WEBP · en fazla 5 MB</span>
+                </div>
+                <input asp-for="Cover" type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-file-input />
+            </div>
+            <span asp-validation-for="Cover" class="field-error"></span>
+            @if (Model.CoverImageUrl is not null)
+            {
+                <label class="checkbox">
+                    <input asp-for="RemoveCover" data-remove-cover />
+                    <span>Kapak görselini kaldır</span>
+                </label>
+            }
+        </section>
+
+        <section class="card form-card">
+            <h2 class="form-card-title">Düzen</h2>
+            <div class="field">
+                <label asp-for="Input.CategoryId">Kategori</label>
+                <select asp-for="Input.CategoryId">
+                    <option value="">Kategorisiz</option>
+                    @foreach (var c in Model.Categories)
+                    {
+                        <option value="@c.Id" selected="@(Model.Input.CategoryId == c.Id)">@c.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="Input.CategoryId" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.SortOrder">Sıra</label>
+                <input asp-for="Input.SortOrder" type="number" />
+                <span class="hint">Küçük sayılar önce gösterilir.</span>
+            </div>
+        </section>
+
+        @if (!Model.IsNew)
+        {
+            <section class="card form-card danger-zone">
+                <h2 class="form-card-title">Tehlikeli bölge</h2>
+                <button type="submit" form="delete-project" class="btn btn-danger-ghost btn-block">Projeyi sil</button>
+            </section>
+        }
+    </aside>
+</form>
+
+@if (!Model.IsNew)
+{
+    <form id="delete-project" asp-action="Delete" asp-route-id="@Model.Id" method="post" data-confirm="“@Model.Input.Title” ve kapak görseli kalıcı olarak silinecek."></form>
+}

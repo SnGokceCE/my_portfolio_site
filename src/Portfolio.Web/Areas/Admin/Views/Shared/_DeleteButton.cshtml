@@ -1,0 +1,7 @@
+@model (string Controller, Guid Id, string Message)
+
+<form asp-action="Delete" asp-controller="@Model.Controller" asp-route-id="@Model.Id" method="post" data-confirm="@Model.Message">
+    <button type="submit" class="icon-btn icon-btn-sm icon-btn-danger" title="Sil" aria-label="Sil">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6" /></svg>
+    </button>
+</form>
