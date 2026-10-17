@@ -1,0 +1,13 @@
+@model StatusViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<section class="section status-page">
+    <div class="container narrow center">
+        <p class="status-code gradient-text">@Model.Code</p>
+        <h1>@Model.Title</h1>
+        <p class="muted">@Model.Message</p>
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Ana sayfaya dön</a>
+    </div>
+</section>

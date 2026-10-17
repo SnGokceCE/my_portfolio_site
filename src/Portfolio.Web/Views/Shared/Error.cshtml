@@ -1,0 +1,17 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Hata";
+}
+
+<section class="section status-page">
+    <div class="container narrow center">
+        <p class="status-code gradient-text">500</p>
+        <h1>Bir şeyler ters gitti</h1>
+        <p class="muted">İstek işlenirken beklenmeyen bir hata oluştu.</p>
+        @if (Model.ShowRequestId)
+        {
+            <p class="muted mono">İstek kimliği: @Model.RequestId</p>
+        }
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Ana sayfaya dön</a>
+    </div>
+</section>

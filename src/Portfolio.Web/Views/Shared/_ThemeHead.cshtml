@@ -1,0 +1,22 @@
+@* Hem site hem admin düzeninde ortak <head> içeriği. Tema betiği CSS'ten önce çalışır,
+   böylece sayfa yüklenirken açık/karanlık tema arasında yanıp sönme olmaz. *@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light dark" />
+<script>
+    (function () {
+        document.documentElement.classList.add("js");
+        try {
+            var saved = localStorage.getItem("theme");
+            var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            document.documentElement.dataset.theme = saved || (prefersDark ? "dark" : "light");
+        } catch (e) {
+            document.documentElement.dataset.theme = "light";
+        }
+    })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="icon" href="~/favicon.ico" />

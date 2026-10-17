@@ -1,0 +1,40 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Giriş";
+}
+
+<section class="section auth-page">
+    <div class="container narrow">
+        <div class="card auth-card">
+            <div class="auth-head">
+                <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+                <h1>Yönetim paneli</h1>
+                <p class="muted">İçerikleri yönetmek için giriş yap.</p>
+            </div>
+
+            <form asp-action="Login" method="post" class="form" novalidate>
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-error" role="alert"></div>
+
+                <div class="field">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" autocomplete="username" autofocus />
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" autocomplete="current-password" />
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+
+                <label class="checkbox">
+                    <input asp-for="RememberMe" />
+                    <span>@Html.DisplayNameFor(m => m.RememberMe)</span>
+                </label>
+
+                <button type="submit" class="btn btn-primary btn-block">Giriş yap</button>
+            </form>
+        </div>
+    </div>
+</section>

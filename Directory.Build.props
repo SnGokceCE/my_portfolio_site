@@ -1,0 +1,13 @@
+<Project>
+  <!-- Tüm projelere uygulanan ortak derleme ayarları -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- XML yorumları zorunlu değil; eksik yorum uyarısını kapat -->
+    <NoWarn>$(NoWarn);CS1591;CA1515;CA1716</NoWarn>
+  </PropertyGroup>
+</Project>

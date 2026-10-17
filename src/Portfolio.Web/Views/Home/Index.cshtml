@@ -1,0 +1,95 @@
+﻿@model SiteProfileDto
+@{
+    ViewData["Description"] = Model.Headline;
+}
+
+<section class="hero" id="hakkimda">
+    <div class="hero-bg" aria-hidden="true">
+        <div class="blob blob-a"></div>
+        <div class="blob blob-b"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="container hero-inner">
+        <div class="hero-copy">
+            @if (Model.IsOpenToWork)
+            {
+                <span class="badge badge-live reveal"><span class="pulse" aria-hidden="true"></span>Yeni fırsatlara açığım</span>
+            }
+
+            <h1 class="hero-title reveal">
+                Merhaba, ben <span class="gradient-text">@Model.FullName</span>.
+            </h1>
+            <p class="hero-headline reveal">@Model.Headline</p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Bio))
+            {
+                <p class="hero-bio reveal">@Model.Bio</p>
+            }
+
+            <div class="hero-actions reveal">
+                <a class="btn btn-primary" href="#projeler">Projelerime göz at</a>
+                <a class="btn btn-ghost" href="#iletisim">İletişime geç</a>
+            </div>
+
+            @if (Model.Location is not null)
+            {
+                <p class="hero-meta muted reveal">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" /><circle cx="12" cy="10" r="2.5" /></svg>
+                    @Model.Location
+                </p>
+            }
+        </div>
+
+        <div class="hero-card reveal" aria-hidden="true">
+            <div class="terminal">
+                <div class="terminal-bar">
+                    <span></span><span></span><span></span>
+                    <code>profile.json</code>
+                </div>
+                <pre class="terminal-body"><code><span class="t-p">{</span>
+  <span class="t-k">"ad"</span>: <span class="t-s">"@Model.FullName"</span>,
+  <span class="t-k">"odak"</span>: [<span class="t-s">"yazılım"</span>, <span class="t-s">"tasarım"</span>, <span class="t-s">"öğrenmek"</span>],
+  <span class="t-k">"musait"</span>: <span class="t-b">@(Model.IsOpenToWork ? "true" : "false")</span>,
+  <span class="t-k">"kahve"</span>: <span class="t-n">∞</span>
+<span class="t-p">}</span><span class="caret"></span></code></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="projeler">
+    <div class="container">
+        <header class="section-head reveal">
+            <p class="eyebrow">Seçilmiş çalışmalar</p>
+            <h2>Projeler</h2>
+            <p class="muted">Üzerinde çalıştığım, öğrendiğim ve gurur duyduğum işler.</p>
+        </header>
+
+        <div class="empty-state reveal">
+            <div class="empty-icon" aria-hidden="true">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+            </div>
+            <h3>Projeler yolda</h3>
+            <p class="muted">Admin panelinden eklenen projeler burada kartlar halinde listelenecek.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section section-alt" id="deneyim">
+    <div class="container">
+        <header class="section-head reveal">
+            <p class="eyebrow">Yolculuk</p>
+            <h2>Deneyim</h2>
+            <p class="muted">Eğitim, staj ve iş deneyimlerimin zaman çizelgesi.</p>
+        </header>
+
+        <div class="empty-state reveal">
+            <div class="empty-icon" aria-hidden="true">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+            </div>
+            <h3>Zaman çizelgesi yolda</h3>
+            <p class="muted">Deneyimler eklendiğinde burada etkileşimli bir zaman çizelgesi görünecek.</p>
+        </div>
+    </div>
+</section>

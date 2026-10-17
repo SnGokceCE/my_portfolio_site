@@ -1,0 +1,42 @@
+@model SiteProfileDto
+@{
+    ViewData["Title"] = "Pano";
+}
+
+<div class="admin-grid">
+    <section class="card welcome-card">
+        <p class="eyebrow">Hoş geldin</p>
+        <h2>@Model.FullName</h2>
+        <p class="muted">@Model.Headline</p>
+    </section>
+
+    <section class="card stat-card">
+        <p class="muted">Projeler</p>
+        <p class="stat-value">0</p>
+        <p class="muted small">2. aşamada eklenecek</p>
+    </section>
+
+    <section class="card stat-card">
+        <p class="muted">Blog yazıları</p>
+        <p class="stat-value">0</p>
+        <p class="muted small">4. aşamada eklenecek</p>
+    </section>
+
+    <section class="card stat-card">
+        <p class="muted">Mesajlar</p>
+        <p class="stat-value">0</p>
+        <p class="muted small">4. aşamada eklenecek</p>
+    </section>
+
+    <section class="card roadmap-card">
+        <h3>Yol haritası</h3>
+        <ol class="roadmap">
+            <li class="done">İskelet: katmanlı mimari, veritabanı, kimlik doğrulama, tema</li>
+            <li>İçerik modeli ve admin CRUD (projeler, deneyimler, yetenekler)</li>
+            <li>Ziyaretçi sitesi: proje listesi, detaylar, zaman çizelgesi</li>
+            <li>Blog (Markdown) ve iletişim formu</li>
+            <li>Çoklu dil, SEO, GitHub entegrasyonu, istatistikler</li>
+            <li>Testler, CI/CD ve yayına alma</li>
+        </ol>
+    </section>
+</div>
