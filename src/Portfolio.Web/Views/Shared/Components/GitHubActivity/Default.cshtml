@@ -1,0 +1,60 @@
+@model Portfolio.Application.Common.Interfaces.GitHubProfile
+@using Portfolio.Web.ViewComponents
+
+<section class="section" id="github">
+    <div class="container">
+        <header class="section-head section-head-row reveal">
+            <div>
+                <p class="eyebrow">@L["Açık kaynak"]</p>
+                <h2>@L["GitHub'da"]</h2>
+                <p class="muted">@L["Son güncellediğim depolar ve en çok kullandığım diller."]</p>
+            </div>
+            <a class="btn btn-ghost" href="@Model.Url" target="_blank" rel="noopener">@@@Model.Login ↗</a>
+        </header>
+
+        <div class="gh-overview reveal">
+            <dl class="gh-stats">
+                <div><dt>@L["Depo"]</dt><dd>@(Model.PublicRepositories.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))</dd></div>
+                <div><dt>@L["Yıldız"]</dt><dd>@(Model.TotalStars.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))</dd></div>
+                <div><dt>@L["Takipçi"]</dt><dd>@(Model.Followers.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))</dd></div>
+            </dl>
+
+            @if (Model.Languages.Count > 0)
+            {
+                <div class="gh-languages">
+                    <div class="lang-bar" role="img" aria-label="@L["Dil dağılımı"]">
+                        @foreach (var lang in Model.Languages)
+                        {
+                            <span style="flex: @lang.Percent.ToString(System.Globalization.CultureInfo.InvariantCulture); background: @LanguageColors.For(lang.Name)" title="@lang.Name @DisplayText.Percent(lang.Percent)"></span>
+                        }
+                    </div>
+                    <ul class="lang-legend">
+                        @foreach (var lang in Model.Languages)
+                        {
+                            <li><span class="dot" style="background: @LanguageColors.For(lang.Name)"></span>@lang.Name <span class="muted">@DisplayText.Percent(lang.Percent)</span></li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+
+        <div class="repo-grid">
+            @foreach (var repo in Model.RecentRepositories)
+            {
+                <article class="repo-card card reveal">
+                    <h3><a class="stretched-link" href="@repo.Url" target="_blank" rel="noopener">@repo.Name</a></h3>
+                    <p class="muted small">@(repo.Description ?? L["Açıklama yok"].Value)</p>
+                    <div class="repo-meta small muted">
+                        @if (repo.Language is not null)
+                        {
+                            <span><span class="dot" style="background: @LanguageColors.For(repo.Language)"></span>@repo.Language</span>
+                        }
+                        <span title="@L["Yıldız"]">★ @(repo.Stars.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))</span>
+                        <span title="@L["Çatal"]">⑂ @(repo.Forks.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))</span>
+                        <span>@DisplayText.LongDate(repo.PushedAt)</span>
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</section>

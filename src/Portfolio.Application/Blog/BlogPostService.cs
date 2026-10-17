@@ -76,7 +76,8 @@ internal sealed class BlogPostService(
             Excerpt = post.Excerpt,
             Body = post.Body,
             Tags = string.Join(", ", post.Tags),
-            IsPublished = post.IsPublished
+            IsPublished = post.IsPublished,
+            Language = post.Language
         };
 
         return new BlogPostEditModel(input, post.CoverImageUrl, post.PublishedAt);
@@ -197,6 +198,7 @@ internal sealed class BlogPostService(
     private void Apply(BlogPost post, BlogPostInput input)
     {
         post.SetTags([input.Tags ?? string.Empty]);
+        post.SetLanguage(input.Language);
         if (input.IsPublished)
         {
             post.Publish(clock.GetUtcNow());

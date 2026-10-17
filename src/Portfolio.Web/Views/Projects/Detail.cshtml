@@ -6,14 +6,25 @@
     ViewData["OgType"] = "article";
     ViewData["NavActive"] = "projects";
     var period = DisplayText.ProjectPeriod(Model.StartedOn, Model.CompletedOn);
+    var english = SiteCultures.IsEnglish(Context.Request);
+    var root = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var home = root + Url.Content("~/");
+    var listUrl = root + Url.Action("Index", "Projects");
+    var pageUrl = root + Url.Action("Detail", "Projects", new { slug = Model.Slug });
+}
+
+@section Head {
+    @JsonLd.Script(
+        JsonLd.Project(Model, pageUrl, root, english ? "en" : "tr"),
+        JsonLd.Breadcrumbs((L["Portfolyo"].Value, home), (L["Projeler"].Value, listUrl), (Model.Title, pageUrl)))
 }
 
 @if (!Model.IsPublished)
 {
     <div class="preview-banner" role="status">
         <div class="container">
-            <strong>Taslak önizleme</strong> — bu proje henüz yayımlanmadı, yalnızca sen görüyorsun.
-            <a class="link" asp-area="Admin" asp-controller="Projects" asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a>
+            <strong>@L["Taslak önizleme"]</strong> — @L["bu proje henüz yayımlanmadı, yalnızca sen görüyorsun."]
+            <a class="link" asp-area="Admin" asp-controller="Projects" asp-action="Edit" asp-route-id="@Model.Id">@L["Düzenle"]</a>
         </div>
     </div>
 }
@@ -21,8 +32,8 @@
 <article class="project-detail">
     <header class="page-hero project-hero">
         <div class="container narrow-wide">
-            <nav class="breadcrumb reveal" aria-label="Konum">
-                <a asp-controller="Projects" asp-action="Index">Projeler</a>
+            <nav class="breadcrumb reveal" aria-label="@L["Konum"]">
+                <a asp-controller="Projects" asp-action="Index">@L["Projeler"]</a>
                 @if (Model.CategoryName is not null)
                 {
                     <span aria-hidden="true">/</span>
@@ -45,7 +56,7 @@
                 {
                     <span>
                         <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-                        @Model.Body.ReadingMinutes dk okuma
+                        @L["{0} dk okuma", Model.Body.ReadingMinutes]
                     </span>
                 }
             </div>
@@ -55,13 +66,13 @@
                 <div class="hero-actions reveal">
                     @if (Model.LiveUrl is not null)
                     {
-                        <a class="btn btn-primary" href="@Model.LiveUrl" target="_blank" rel="noopener">Canlı görüntüle ↗</a>
+                        <a class="btn btn-primary" href="@Model.LiveUrl" target="_blank" rel="noopener">@L["Canlı görüntüle ↗"]</a>
                     }
                     @if (Model.RepositoryUrl is not null)
                     {
                         <a class="btn btn-ghost" href="@Model.RepositoryUrl" target="_blank" rel="noopener">
                             <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6" /></svg>
-                            Kaynak kod
+                            @L["Kaynak kod"]
                         </a>
                     }
                 </div>
@@ -73,16 +84,20 @@
     {
         <div class="container narrow-wide">
             <figure class="detail-cover reveal">
-                <img src="@Model.CoverImageUrl" alt="@Model.Title kapak görseli" style="view-transition-name: cover-@Model.Slug" />
+                <img src="@Model.CoverImageUrl" alt="@L["{0} kapak görseli", Model.Title]" style="view-transition-name: cover-@Model.Slug" />
             </figure>
         </div>
     }
 
     <div class="container narrow-wide detail-layout">
         <div class="detail-content">
+            @if (Model.IsTranslationMissing)
+            {
+                <p class="translation-note">@L["Bu içerik henüz İngilizceye çevrilmedi; Türkçe aslı gösteriliyor."]</p>
+            }
             @if (Model.Body.IsEmpty)
             {
-                <p class="muted">Bu proje için henüz detaylı bir yazı eklenmedi.</p>
+                <p class="muted">@L["Bu proje için henüz detaylı bir yazı eklenmedi."]</p>
             }
             else
             {
@@ -93,8 +108,8 @@
         <aside class="detail-aside">
             @if (Model.Body.Headings.Count >= 2)
             {
-                <nav class="toc card" aria-label="İçindekiler" data-toc>
-                    <p class="eyebrow">İçindekiler</p>
+                <nav class="toc card" aria-label="@L["İçindekiler"]" data-toc>
+                    <p class="eyebrow">@L["İçindekiler"]</p>
                     <ol>
                         @foreach (var h in Model.Body.Headings)
                         {
@@ -107,7 +122,7 @@
             @if (Model.Skills.Count > 0)
             {
                 <section class="card aside-card">
-                    <p class="eyebrow">Teknolojiler</p>
+                    <p class="eyebrow">@L["Teknolojiler"]</p>
                     <ul class="tech-list">
                         @foreach (var skill in Model.Skills)
                         {
@@ -117,13 +132,15 @@
                 </section>
             }
 
+            @await Component.InvokeAsync("RepositoryStats", new { repositoryUrl = Model.RepositoryUrl })
+
             @if (Model.PublishedAt is { } published)
             {
                 <p class="muted small aside-note">
-                    @DisplayText.LongDate(published) tarihinde yayımlandı
+                    @L["{0} tarihinde yayımlandı", DisplayText.LongDate(published)]
                     @if ((Model.LastModified - published).TotalDays >= 1)
                     {
-                        <br /><span>Son güncelleme: @DisplayText.LongDate(Model.LastModified)</span>
+                        <br /><span>@L["Son güncelleme: {0}", DisplayText.LongDate(Model.LastModified)]</span>
                     }
                 </p>
             }
@@ -132,11 +149,11 @@
 
     @if (Model.Previous is not null || Model.Next is not null)
     {
-        <nav class="container narrow-wide prev-next" aria-label="Diğer projeler">
+        <nav class="container narrow-wide prev-next" aria-label="@L["Diğer projeler"]">
             @if (Model.Previous is { } prev)
             {
                 <a class="card prev" asp-action="Detail" asp-route-slug="@prev.Slug" rel="prev">
-                    <span class="muted small">← Önceki proje</span>
+                    <span class="muted small">@L["← Önceki proje"]</span>
                     <strong>@prev.Title</strong>
                 </a>
             }
@@ -147,7 +164,7 @@
             @if (Model.Next is { } next)
             {
                 <a class="card next" asp-action="Detail" asp-route-slug="@next.Slug" rel="next">
-                    <span class="muted small">Sonraki proje →</span>
+                    <span class="muted small">@L["Sonraki proje →"]</span>
                     <strong>@next.Title</strong>
                 </a>
             }
@@ -160,8 +177,8 @@
     <section class="section section-alt">
         <div class="container">
             <header class="section-head reveal">
-                <p class="eyebrow">Keşfetmeye devam et</p>
-                <h2>Diğer projeler</h2>
+                <p class="eyebrow">@L["Keşfetmeye devam et"]</p>
+                <h2>@L["Diğer projeler"]</h2>
             </header>
             <div class="project-grid">
                 @foreach (var project in Model.Related)

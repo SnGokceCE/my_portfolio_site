@@ -1,4 +1,5 @@
 using FluentValidation;
+using Portfolio.Application.Common.Interfaces;
 using Portfolio.Domain.Entities;
 
 namespace Portfolio.Application.Contact;
@@ -25,19 +26,27 @@ public sealed class ContactInput
     public string Message { get; set; } = string.Empty;
 }
 
+/// <summary>Ziyaretçiye açık form: mesajlar sayfanın diline (tr/en) göre üretilir.</summary>
 public sealed class ContactInputValidator : AbstractValidator<ContactInput>
 {
     public ContactInputValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(ContactMessage.NameMaxLength).WithName("Adın");
+        RuleFor(x => x.Name)
+            .NotEmpty().MaximumLength(ContactMessage.NameMaxLength)
+            .WithName(_ => Lang.T("Adın", "Your name"));
         RuleFor(x => x.Email)
-            .NotEmpty().WithName("E-posta")
-            .EmailAddress().WithMessage("Geçerli bir e-posta adresi gir.")
+            .NotEmpty().WithName(_ => Lang.T("E-posta", "Email"))
+            .EmailAddress().WithMessage(_ => Lang.T("Geçerli bir e-posta adresi gir.", "Please enter a valid email address."))
             .MaximumLength(ContactMessage.EmailMaxLength);
-        RuleFor(x => x.Subject).MaximumLength(ContactMessage.SubjectMaxLength).WithName("Konu");
+        RuleFor(x => x.Subject)
+            .MaximumLength(ContactMessage.SubjectMaxLength)
+            .WithName(_ => Lang.T("Konu", "Subject"));
         RuleFor(x => x.Message)
-            .NotEmpty().WithName("Mesaj")
-            .MinimumLength(ContactMessage.MessageMinLength).WithMessage($"Mesaj en az {ContactMessage.MessageMinLength} karakter olmalı.")
+            .NotEmpty().WithName(_ => Lang.T("Mesaj", "Message"))
+            .MinimumLength(ContactMessage.MessageMinLength)
+            .WithMessage(_ => Lang.T(
+                $"Mesaj en az {ContactMessage.MessageMinLength} karakter olmalı.",
+                $"Message must be at least {ContactMessage.MessageMinLength} characters."))
             .MaximumLength(ContactMessage.MessageMaxLength);
     }
 }

@@ -3,8 +3,14 @@
     var profile = Model.Profile;
     ViewData["Description"] = profile.Headline;
     var today = DateOnly.FromDateTime(DateTime.Today);
-    var skillGroups = Model.Skills.GroupBy(s => s.Group ?? "Diğer").ToList();
+    var skillGroups = Model.Skills.GroupBy(s => s.Group ?? L["Diğer"].Value).ToList();
+    var english = SiteCultures.IsEnglish(Context.Request);
     var topSkills = Model.Skills.OrderByDescending(s => s.Level).Take(3).Select(s => s.Name).ToList();
+    var origin = $"{Context.Request.Scheme}://{Context.Request.Host}";
+}
+
+@section Head {
+    @JsonLd.Script(JsonLd.Person(profile, origin), JsonLd.WebSite(profile, origin, english ? "en" : "tr"))
 }
 
 <section class="hero" id="hakkimda">
@@ -18,11 +24,11 @@
         <div class="hero-copy">
             @if (profile.IsOpenToWork)
             {
-                <span class="badge badge-live reveal"><span class="pulse" aria-hidden="true"></span>Yeni fırsatlara açığım</span>
+                <span class="badge badge-live reveal"><span class="pulse" aria-hidden="true"></span>@L["Yeni fırsatlara açığım"]</span>
             }
 
             <h1 class="hero-title reveal">
-                Merhaba, ben <span class="gradient-text">@profile.FullName</span>.
+                @L["Merhaba, ben"] <span class="gradient-text">@profile.FullName</span>.
             </h1>
             <p class="hero-headline reveal">@profile.Headline</p>
 
@@ -32,8 +38,8 @@
             }
 
             <div class="hero-actions reveal">
-                <a class="btn btn-primary" asp-controller="Projects" asp-action="Index">Projelerime göz at</a>
-                <a class="btn btn-ghost" asp-controller="Contact" asp-action="Index">İletişime geç</a>
+                <a class="btn btn-primary" asp-controller="Projects" asp-action="Index">@L["Projelerime göz at"]</a>
+                <a class="btn btn-ghost" asp-controller="Contact" asp-action="Index">@L["İletişime geç"]</a>
             </div>
 
             @if (profile.Location is not null)
@@ -52,10 +58,10 @@
                     <code>profile.json</code>
                 </div>
                 <pre class="terminal-body"><code><span class="t-p">{</span>
-  <span class="t-k">"ad"</span>: <span class="t-s">"@profile.FullName"</span>,
-  <span class="t-k">"guclu_yonler"</span>: [@Html.Raw(string.Join(", ", (topSkills.Count > 0 ? topSkills : ["öğrenmek"]).Select(s => $"<span class=\"t-s\">\"{System.Net.WebUtility.HtmlEncode(s)}\"</span>")))],
-  <span class="t-k">"secili_proje"</span>: <span class="t-n">@Model.FeaturedProjects.Count</span>,
-  <span class="t-k">"musait"</span>: <span class="t-b">@(profile.IsOpenToWork ? "true" : "false")</span>
+  <span class="t-k">@(english ? "\"name\"" : "\"ad\"")</span>: <span class="t-s">"@profile.FullName"</span>,
+  <span class="t-k">@(english ? "\"strengths\"" : "\"guclu_yonler\"")</span>: [@Html.Raw(string.Join(", ", (topSkills.Count > 0 ? topSkills : [L["öğrenmek"].Value]).Select(s => $"<span class=\"t-s\">\"{System.Net.WebUtility.HtmlEncode(s)}\"</span>")))],
+  <span class="t-k">@(english ? "\"featured_projects\"" : "\"secili_proje\"")</span>: <span class="t-n">@Model.FeaturedProjects.Count</span>,
+  <span class="t-k">@(english ? "\"available\"" : "\"musait\"")</span>: <span class="t-b">@(profile.IsOpenToWork ? "true" : "false")</span>
 <span class="t-p">}</span><span class="caret"></span></code></pre>
             </div>
         </div>
@@ -66,13 +72,13 @@
     <div class="container">
         <header class="section-head section-head-row reveal">
             <div>
-                <p class="eyebrow">Seçilmiş çalışmalar</p>
-                <h2>Projeler</h2>
-                <p class="muted">Üzerinde çalıştığım, öğrendiğim ve gurur duyduğum işler.</p>
+                <p class="eyebrow">@L["Seçilmiş çalışmalar"]</p>
+                <h2>@L["Projeler"]</h2>
+                <p class="muted">@L["Üzerinde çalıştığım, öğrendiğim ve gurur duyduğum işler."]</p>
             </div>
             @if (Model.FeaturedProjects.Count > 0)
             {
-                <a class="btn btn-ghost" asp-controller="Projects" asp-action="Index">Tüm projeler →</a>
+                <a class="btn btn-ghost" asp-controller="Projects" asp-action="Index">@L["Tüm projeler →"]</a>
             }
         </header>
 
@@ -82,8 +88,8 @@
                 <div class="empty-icon" aria-hidden="true">
                     <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
                 </div>
-                <h3>Projeler yolda</h3>
-                <p class="muted">Yakında burada çalışmalarımı paylaşacağım.</p>
+                <h3>@L["Projeler yolda"]</h3>
+                <p class="muted">@L["Yakında burada çalışmalarımı paylaşacağım."]</p>
             </div>
         }
         else
@@ -101,9 +107,9 @@
 <section class="section section-alt" id="deneyim">
     <div class="container">
         <header class="section-head reveal">
-            <p class="eyebrow">Yolculuk</p>
-            <h2>Deneyim</h2>
-            <p class="muted">Eğitim, staj ve iş deneyimlerim.</p>
+            <p class="eyebrow">@L["Yolculuk"]</p>
+            <h2>@L["Deneyim"]</h2>
+            <p class="muted">@L["Eğitim, staj ve iş deneyimlerim."]</p>
         </header>
 
         @if (Model.Experiences.Count == 0)
@@ -112,8 +118,8 @@
                 <div class="empty-icon" aria-hidden="true">
                     <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
                 </div>
-                <h3>Zaman çizelgesi yolda</h3>
-                <p class="muted">Deneyimler eklendiğinde burada görünecek.</p>
+                <h3>@L["Zaman çizelgesi yolda"]</h3>
+                <p class="muted">@L["Deneyimler eklendiğinde burada görünecek."]</p>
             </div>
         }
         else
@@ -132,7 +138,7 @@
                                 <span class="type-badge type-@e.Type.ToString().ToLowerInvariant()">@DisplayText.Label(e.Type)</span>
                                 @if (e.EndDate is null)
                                 {
-                                    <span class="badge badge-live"><span class="pulse" aria-hidden="true"></span>Devam ediyor</span>
+                                    <span class="badge badge-live"><span class="pulse" aria-hidden="true"></span>@L["Devam ediyor"]</span>
                                 }
                             </div>
                             <h3>@e.Title</h3>
@@ -167,9 +173,9 @@
     <section class="section" id="yetenekler">
         <div class="container">
             <header class="section-head reveal">
-                <p class="eyebrow">Araç kutusu</p>
-                <h2>Yetenekler</h2>
-                <p class="muted">Projelerimde kullandığım teknolojiler ve araçlar.</p>
+                <p class="eyebrow">@L["Araç kutusu"]</p>
+                <h2>@L["Yetenekler"]</h2>
+                <p class="muted">@L["Projelerimde kullandığım teknolojiler ve araçlar."]</p>
             </header>
 
             <div class="skill-grid">
@@ -195,6 +201,8 @@
     </section>
 }
 
+@await Component.InvokeAsync("GitHubActivity")
+
 @if (Model.RecentPosts.Count > 0)
 {
     <section class="section section-alt" id="yazilar">
@@ -202,10 +210,10 @@
             <header class="section-head section-head-row reveal">
                 <div>
                     <p class="eyebrow">Blog</p>
-                    <h2>Son yazılar</h2>
-                    <p class="muted">Öğrendiklerimi ve deneyimlerimi yazıya döküyorum.</p>
+                    <h2>@L["Son yazılar"]</h2>
+                    <p class="muted">@L["Öğrendiklerimi ve deneyimlerimi yazıya döküyorum."]</p>
                 </div>
-                <a class="btn btn-ghost" asp-controller="Blog" asp-action="Index">Tüm yazılar →</a>
+                <a class="btn btn-ghost" asp-controller="Blog" asp-action="Index">@L["Tüm yazılar →"]</a>
             </header>
             <div class="post-grid">
                 @foreach (var post in Model.RecentPosts)

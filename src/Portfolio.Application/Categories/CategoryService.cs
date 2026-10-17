@@ -43,7 +43,7 @@ internal sealed class CategoryService(IApplicationDbContext db, IValidator<Categ
         await db.Categories
             .AsNoTracking()
             .Where(c => c.Id == id)
-            .Select(c => new CategoryInput { Name = c.Name, Slug = c.Slug, SortOrder = c.SortOrder })
+            .Select(c => new CategoryInput { Name = c.Name, Slug = c.Slug, SortOrder = c.SortOrder, NameEn = c.NameEn })
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<Result<Guid>> CreateAsync(CategoryInput input, CancellationToken cancellationToken = default)
@@ -55,7 +55,11 @@ internal sealed class CategoryService(IApplicationDbContext db, IValidator<Categ
         }
 
         Category? category = null;
-        errors = ValidationExtensions.TryApply(() => category = new Category(input.Name, input.Slug, input.SortOrder));
+        errors = ValidationExtensions.TryApply(() =>
+        {
+            category = new Category(input.Name, input.Slug, input.SortOrder);
+            category.SetEnglishName(input.NameEn);
+        });
         if (errors is not null)
         {
             return Result.Invalid<Guid>(errors);
@@ -75,7 +79,11 @@ internal sealed class CategoryService(IApplicationDbContext db, IValidator<Categ
         }
 
         var errors = await ValidateAsync(id, input, cancellationToken)
-                     ?? ValidationExtensions.TryApply(() => category.Update(input.Name, input.Slug, input.SortOrder));
+                     ?? ValidationExtensions.TryApply(() =>
+                     {
+                         category.Update(input.Name, input.Slug, input.SortOrder);
+                         category.SetEnglishName(input.NameEn);
+                     });
         if (errors is not null)
         {
             return Result.Invalid(errors);

@@ -5,23 +5,33 @@
     ViewData["OgImage"] = Model.CoverImageUrl;
     ViewData["OgType"] = "article";
     ViewData["NavActive"] = "blog";
+    var root = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var home = root + Url.Content("~/");
+    var listUrl = root + Url.Action("Index", "Blog");
+    var pageUrl = root + Url.Action("Detail", "Blog", new { slug = Model.Slug });
+}
+
+@section Head {
+    @JsonLd.Script(
+        JsonLd.BlogPosting(Model, pageUrl, root),
+        JsonLd.Breadcrumbs((L["Portfolyo"].Value, home), (L["Blog"].Value, listUrl), (Model.Title, pageUrl)))
 }
 
 @if (!Model.IsPublished)
 {
     <div class="preview-banner" role="status">
         <div class="container">
-            <strong>Taslak önizleme</strong> — bu yazı henüz yayımlanmadı, yalnızca sen görüyorsun.
-            <a class="link" asp-area="Admin" asp-controller="Posts" asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a>
+            <strong>@L["Taslak önizleme"]</strong> — @L["bu yazı henüz yayımlanmadı, yalnızca sen görüyorsun."]
+            <a class="link" asp-area="Admin" asp-controller="Posts" asp-action="Edit" asp-route-id="@Model.Id">@L["Düzenle"]</a>
         </div>
     </div>
 }
 
-<article class="project-detail">
+<article class="project-detail" lang="@Model.Language">
     <header class="page-hero project-hero">
         <div class="container narrow-wide">
-            <nav class="breadcrumb reveal" aria-label="Konum">
-                <a asp-action="Index">Blog</a>
+            <nav class="breadcrumb reveal" aria-label="@L["Konum"]">
+                <a asp-action="Index">@L["Blog"]</a>
                 @if (Model.Tags.Count > 0)
                 {
                     <span aria-hidden="true">/</span>
@@ -40,7 +50,7 @@
                 }
                 <span>
                     <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-                    @Model.Body.ReadingMinutes dk okuma
+                    @L["{0} dk okuma", Model.Body.ReadingMinutes]
                 </span>
             </div>
         </div>
@@ -50,7 +60,7 @@
     {
         <div class="container narrow-wide">
             <figure class="detail-cover reveal">
-                <img src="@Model.CoverImageUrl" alt="@Model.Title kapak görseli" />
+                <img src="@Model.CoverImageUrl" alt="@L["{0} kapak görseli", Model.Title]" />
             </figure>
         </div>
     }
@@ -61,7 +71,7 @@
 
             @if (Model.Tags.Count > 0)
             {
-                <ul class="tech-list post-tags" aria-label="Etiketler">
+                <ul class="tech-list post-tags" aria-label="@L["Etiketler"]">
                     @foreach (var tag in Model.Tags)
                     {
                         <li><a asp-action="Index" asp-route-etiket="@tag">#@tag</a></li>
@@ -73,8 +83,8 @@
         <aside class="detail-aside">
             @if (Model.Body.Headings.Count >= 2)
             {
-                <nav class="toc card" aria-label="İçindekiler" data-toc>
-                    <p class="eyebrow">İçindekiler</p>
+                <nav class="toc card" aria-label="@L["İçindekiler"]" data-toc>
+                    <p class="eyebrow">@L["İçindekiler"]</p>
                     <ol>
                         @foreach (var h in Model.Body.Headings)
                         {
@@ -84,20 +94,20 @@
                 </nav>
             }
             <section class="card aside-card">
-                <p class="eyebrow">Beğendin mi?</p>
-                <p class="muted small">Sorun ya da yorumun varsa bana yazabilirsin.</p>
-                <a class="btn btn-ghost btn-sm" asp-controller="Contact" asp-action="Index">İletişime geç →</a>
+                <p class="eyebrow">@L["Beğendin mi?"]</p>
+                <p class="muted small">@L["Sorun ya da yorumun varsa bana yazabilirsin."]</p>
+                <a class="btn btn-ghost btn-sm" asp-controller="Contact" asp-action="Index">@L["İletişime geç →"]</a>
             </section>
         </aside>
     </div>
 
     @if (Model.Previous is not null || Model.Next is not null)
     {
-        <nav class="container narrow-wide prev-next" aria-label="Diğer yazılar">
+        <nav class="container narrow-wide prev-next" aria-label="@L["Diğer yazılar"]">
             @if (Model.Previous is { } prev)
             {
                 <a class="card prev" asp-action="Detail" asp-route-slug="@prev.Slug" rel="prev">
-                    <span class="muted small">← Önceki yazı</span>
+                    <span class="muted small">@L["← Önceki yazı"]</span>
                     <strong>@prev.Title</strong>
                 </a>
             }
@@ -108,7 +118,7 @@
             @if (Model.Next is { } next)
             {
                 <a class="card next" asp-action="Detail" asp-route-slug="@next.Slug" rel="next">
-                    <span class="muted small">Sonraki yazı →</span>
+                    <span class="muted small">@L["Sonraki yazı →"]</span>
                     <strong>@next.Title</strong>
                 </a>
             }
@@ -121,8 +131,8 @@
     <section class="section section-alt">
         <div class="container narrow-wide">
             <header class="section-head reveal">
-                <p class="eyebrow">Okumaya devam et</p>
-                <h2>İlgili yazılar</h2>
+                <p class="eyebrow">@L["Okumaya devam et"]</p>
+                <h2>@L["İlgili yazılar"]</h2>
             </header>
             <div class="post-list">
                 @foreach (var post in Model.Related)

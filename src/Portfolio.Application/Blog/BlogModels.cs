@@ -36,6 +36,8 @@ public sealed class BlogPostInput
     public string? Tags { get; set; }
 
     public bool IsPublished { get; set; }
+
+    public string Language { get; set; } = BlogPost.Turkish;
 }
 
 public sealed record BlogPostEditModel(BlogPostInput Input, string? CoverImageUrl, DateTimeOffset? PublishedAt);
@@ -48,6 +50,9 @@ public sealed class BlogPostInputValidator : AbstractValidator<BlogPostInput>
         RuleFor(x => x.Slug).OptionalSlug().WithName("Slug");
         RuleFor(x => x.Excerpt).NotEmpty().MaximumLength(BlogPost.ExcerptMaxLength).WithName("Giriş");
         RuleFor(x => x.Body).NotEmpty().MaximumLength(BlogPost.BodyMaxLength).WithName("İçerik");
+        RuleFor(x => x.Language)
+            .Must(l => l is BlogPost.Turkish or BlogPost.English)
+            .WithMessage("Yazı dili Türkçe ya da İngilizce olmalı.");
         RuleFor(x => x.Tags)
             .Must(t => BlogPost.NormalizeTags([t ?? string.Empty]).Length <= BlogPost.MaxTags)
             .WithMessage($"En fazla {BlogPost.MaxTags} etiket eklenebilir.")

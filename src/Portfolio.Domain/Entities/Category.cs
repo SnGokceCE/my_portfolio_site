@@ -31,6 +31,10 @@ public sealed class Category : BaseEntity
 
     public IReadOnlyCollection<Project> Projects => _projects;
 
+    public string? NameEn { get; private set; }
+
+    public void SetEnglishName(string? nameEn) => NameEn = Guard.Optional(nameEn, nameof(NameEn), NameMaxLength);
+
     public void Update(string name, string? slug, int sortOrder)
     {
         Name = Guard.Required(name, nameof(Name), NameMaxLength);

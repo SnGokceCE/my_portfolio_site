@@ -47,6 +47,8 @@ services:
       Email__FromAddress: no-reply@portfolio.test
       Contact__NotifyEmail: ${NOTIFY_EMAIL:-}
       DataProtection__KeysPath: /app/keys
+      Analytics__Secret: ${ANALYTICS_SECRET:-}
+      GitHub__Token: ${GITHUB_TOKEN:-}
     ports:
       - "8080:8080"
     volumes:

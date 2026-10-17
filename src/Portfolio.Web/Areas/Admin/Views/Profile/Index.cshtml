@@ -38,6 +38,24 @@
         </label>
     </section>
 
+    <details class="card form-card lang-card" open="@((Model.Input.HeadlineEn ?? Model.Input.BioEn) is not null)">
+        <summary>
+            <span class="lang-flag" aria-hidden="true">EN</span>
+            <span>İngilizce sürüm <span class="muted">(isteğe bağlı)</span></span>
+        </summary>
+        <p class="hint">Sitenin <code>/en</code> adresinde gösterilir. Boş bırakılan alanlarda Türkçe aslı kullanılır.</p>
+        <div class="field">
+            <label asp-for="Input.HeadlineEn">Headline</label>
+            <input asp-for="Input.HeadlineEn" maxlength="@SiteProfile.HeadlineMaxLength" data-counter placeholder="e.g. Computer Engineering student · Full-stack developer" />
+            <span asp-validation-for="Input.HeadlineEn" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.BioEn">Short bio</label>
+            <textarea asp-for="Input.BioEn" rows="5" maxlength="@SiteProfile.BioMaxLength" data-counter></textarea>
+            <span asp-validation-for="Input.BioEn" class="field-error"></span>
+        </div>
+    </details>
+
     <section class="card form-card">
         <h2 class="form-card-title">İletişim ve bağlantılar</h2>
         <div class="form-grid">

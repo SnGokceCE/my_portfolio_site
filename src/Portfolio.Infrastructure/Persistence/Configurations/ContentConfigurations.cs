@@ -13,6 +13,7 @@ internal sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Id).ValueGeneratedNever();
         builder.Property(c => c.Name).HasMaxLength(Category.NameMaxLength).IsRequired();
         builder.Property(c => c.Slug).HasMaxLength(Slug.MaxLength).IsRequired();
+        builder.Property(c => c.NameEn).HasMaxLength(Category.NameMaxLength);
         builder.HasIndex(c => c.Slug).IsUnique();
     }
 }
@@ -42,6 +43,8 @@ internal sealed class ExperienceConfiguration : IEntityTypeConfiguration<Experie
         builder.Property(e => e.Location).HasMaxLength(Experience.LocationMaxLength);
         builder.Property(e => e.Description).HasMaxLength(Experience.DescriptionMaxLength);
         builder.Property(e => e.Url).HasMaxLength(Guard.UrlMaxLength);
+        builder.Property(e => e.TitleEn).HasMaxLength(Experience.TitleMaxLength);
+        builder.Property(e => e.DescriptionEn).HasMaxLength(Experience.DescriptionMaxLength);
         builder.Ignore(e => e.IsCurrent);
         builder.ToTable(t => t.HasCheckConstraint("ck_experiences_dates", "end_date IS NULL OR end_date >= start_date"));
     }
@@ -60,6 +63,9 @@ internal sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(p => p.CoverImageUrl).HasMaxLength(Guard.UrlMaxLength);
         builder.Property(p => p.RepositoryUrl).HasMaxLength(Guard.UrlMaxLength);
         builder.Property(p => p.LiveUrl).HasMaxLength(Guard.UrlMaxLength);
+        builder.Property(p => p.TitleEn).HasMaxLength(Project.TitleMaxLength);
+        builder.Property(p => p.SummaryEn).HasMaxLength(Project.SummaryMaxLength);
+        builder.Property(p => p.BodyEn).HasMaxLength(Project.BodyMaxLength);
 
         builder.HasIndex(p => p.Slug).IsUnique();
         builder.HasIndex(p => new { p.IsPublished, p.SortOrder });

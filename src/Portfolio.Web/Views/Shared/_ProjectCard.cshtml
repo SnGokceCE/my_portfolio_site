@@ -16,7 +16,7 @@
         }
         @if (Model.IsFeatured)
         {
-            <span class="featured-badge">★ Öne çıkan</span>
+            <span class="featured-badge">★ @L["Öne çıkan"]</span>
         }
     </div>
 
@@ -39,7 +39,7 @@
 
         @if (Model.Skills.Count > 0)
         {
-            <ul class="tech-list" aria-label="Kullanılan teknolojiler">
+            <ul class="tech-list" aria-label="@L["Kullanılan teknolojiler"]">
                 @foreach (var skill in Model.Skills.Take(maxChips))
                 {
                     <li>@skill</li>

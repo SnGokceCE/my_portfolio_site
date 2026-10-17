@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Localization;
 using Portfolio.Application.Contact;
 using Portfolio.Application.SiteProfiles;
 using Portfolio.Web.Infrastructure;
+using Portfolio.Web.Localization;
 using Portfolio.Web.Models;
 
 namespace Portfolio.Web.Controllers;
@@ -17,6 +19,7 @@ public partial class ContactController(
     IContactService contact,
     IFormTimeTrap timeTrap,
     ISiteProfileService profiles,
+    IStringLocalizer<SharedResource> localizer,
     ILogger<ContactController> logger) : Controller
 {
     private const string SentKey = "ContactSent";
@@ -52,7 +55,7 @@ public partial class ContactController(
                 LogSpamBlocked(logger, "time-trap");
                 return SentRedirect();
             case TimeTrapResult.Expired:
-                ModelState.AddModelError(string.Empty, "Form uzun süre açık kaldığı için süresi doldu. Lütfen tekrar gönder.");
+                ModelState.AddModelError(string.Empty, localizer["Form uzun süre açık kaldığı için süresi doldu. Lütfen tekrar gönder."]);
                 return await Redisplay(form, cancellationToken);
         }
 

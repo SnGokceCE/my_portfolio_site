@@ -18,7 +18,8 @@
         const setOpen = (open) => {
             nav.classList.toggle("open", open);
             navToggle.setAttribute("aria-expanded", String(open));
-            navToggle.setAttribute("aria-label", open ? "Menüyü kapat" : "Menüyü aç");
+            const label = open ? navToggle.dataset.labelClose : navToggle.dataset.labelOpen;
+            if (label) navToggle.setAttribute("aria-label", label);
         };
         navToggle.addEventListener("click", () => setOpen(!nav.classList.contains("open")));
         nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => setOpen(false)));
@@ -87,7 +88,7 @@
             const button = form.querySelector("[data-submit]");
             if (!button) return;
             button.disabled = true;
-            button.querySelector("span").textContent = "Gönderiliyor…";
+            button.querySelector("span").textContent = button.dataset.sendingText || "…";
         });
     });
 

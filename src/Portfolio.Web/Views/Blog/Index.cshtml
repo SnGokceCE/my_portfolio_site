@@ -2,8 +2,8 @@
 @{
     var q = Model.Query;
     var list = Model.Posts;
-    ViewData["Title"] = q.Tag is null ? "Blog" : $"#{q.Tag}";
-    ViewData["Description"] = "Öğrendiklerim, staj notlarım ve projelerimin arka planı.";
+    ViewData["Title"] = q.Tag is null ? L["Blog"].Value : $"#{q.Tag}";
+    ViewData["Description"] = L["Öğrendiklerim, staj notlarım ve projelerimin arka planı."].Value;
     ViewData["NavActive"] = "blog";
 
     string BlogUrl(string? tag, int page = 1) =>
@@ -12,17 +12,17 @@
 
 <section class="page-hero">
     <div class="container">
-        <p class="eyebrow reveal">Yazılar</p>
-        <h1 class="reveal">Blog</h1>
+        <p class="eyebrow reveal">@L["Yazılar"]</p>
+        <h1 class="reveal">@L["Blog"]</h1>
         <p class="muted lead reveal">
             @if (q.Tag is not null)
             {
-                <span><strong>#@q.Tag</strong> etiketli @list.TotalCount yazı.</span>
-                <a class="link" href="@BlogUrl(null)">Tüm yazılar</a>
+                <span>@Html.Raw(L["<strong>#{0}</strong> etiketli {1} yazı.", System.Net.WebUtility.HtmlEncode(q.Tag), list.TotalCount].Value)</span>
+                <a class="link" href="@BlogUrl(null)">@L["Tüm yazılar"]</a>
             }
             else
             {
-                <span>Öğrendiklerim, staj notlarım ve projelerimin arka planı.</span>
+                <span>@L["Öğrendiklerim, staj notlarım ve projelerimin arka planı."]</span>
             }
             <a class="link rss-link" asp-action="Rss">
                 <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg>
@@ -41,8 +41,8 @@
                     <div class="empty-icon" aria-hidden="true">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>
                     </div>
-                    <h3>@(q.Tag is null ? "Henüz yazı yok" : "Bu etikette yazı yok")</h3>
-                    <p class="muted">Yakında burada yazılarımı paylaşacağım.</p>
+                    <h3>@(q.Tag is null ? L["Henüz yazı yok"] : L["Bu etikette yazı yok"])</h3>
+                    <p class="muted">@L["Yakında burada yazılarımı paylaşacağım."]</p>
                 </div>
             }
             else
@@ -54,15 +54,15 @@
 
                 @if (list.TotalPages > 1)
                 {
-                    <nav class="pager" aria-label="Sayfalar">
+                    <nav class="pager" aria-label="@L["Sayfalar"]">
                         @if (list.HasPrevious)
                         {
-                            <a class="btn btn-ghost" href="@BlogUrl(q.Tag, list.Page - 1)" rel="prev">← Daha yeni</a>
+                            <a class="btn btn-ghost" href="@BlogUrl(q.Tag, list.Page - 1)" rel="prev">@L["← Daha yeni"]</a>
                         }
-                        <span class="muted small">Sayfa @list.Page / @list.TotalPages</span>
+                        <span class="muted small">@L["Sayfa {0} / {1}", list.Page, list.TotalPages]</span>
                         @if (list.HasNext)
                         {
-                            <a class="btn btn-ghost" href="@BlogUrl(q.Tag, list.Page + 1)" rel="next">Daha eski →</a>
+                            <a class="btn btn-ghost" href="@BlogUrl(q.Tag, list.Page + 1)" rel="next">@L["Daha eski →"]</a>
                         }
                     </nav>
                 }
@@ -73,7 +73,7 @@
         {
             <aside class="blog-aside">
                 <section class="card aside-card reveal">
-                    <p class="eyebrow">Etiketler</p>
+                    <p class="eyebrow">@L["Etiketler"]</p>
                     <div class="tag-cloud">
                         @foreach (var tag in Model.Tags)
                         {

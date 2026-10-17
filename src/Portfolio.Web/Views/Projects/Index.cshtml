@@ -2,8 +2,8 @@
 @{
     var q = Model.Query;
     var list = Model.Projects;
-    ViewData["Title"] = q.Technology ?? Model.Categories.FirstOrDefault(c => c.Value == q.Category)?.Label ?? "Projeler";
-    ViewData["Description"] = "Geliştirdiğim projeler, kullandığım teknolojiler ve çözdüğüm problemler.";
+    ViewData["Title"] = q.Technology ?? Model.Categories.FirstOrDefault(c => c.Value == q.Category)?.Label ?? L["Projeler"].Value;
+    ViewData["Description"] = L["Geliştirdiğim projeler, kullandığım teknolojiler ve çözdüğüm problemler."].Value;
     ViewData["NavActive"] = "projects";
 
     string FilterUrl(string? category, string? technology, int page = 1) =>
@@ -12,17 +12,17 @@
 
 <section class="page-hero">
     <div class="container">
-        <p class="eyebrow reveal">Portfolyo</p>
-        <h1 class="reveal">Projeler</h1>
+        <p class="eyebrow reveal">@L["Portfolyo"]</p>
+        <h1 class="reveal">@L["Projeler"]</h1>
         <p class="muted lead reveal">
             @if (q.IsFiltered)
             {
-                <span>Filtreye uyan <strong>@list.TotalCount</strong> proje.</span>
-                <a class="link" href="@FilterUrl(null, null)">Filtreleri temizle</a>
+                <span>@Html.Raw(L["Filtreye uyan <strong>{0}</strong> proje.", list.TotalCount].Value)</span>
+                <a class="link" href="@FilterUrl(null, null)">@L["Filtreleri temizle"]</a>
             }
             else
             {
-                <span>Üzerinde çalıştığım @list.TotalCount proje; problemden çözüme, kullandığım teknolojilerle birlikte.</span>
+                <span>@L["Üzerinde çalıştığım {0} proje; problemden çözüme, kullandığım teknolojilerle birlikte.", list.TotalCount]</span>
             }
         </p>
     </div>
@@ -35,8 +35,8 @@
             <div class="filters reveal">
                 @if (Model.Categories.Count > 0)
                 {
-                    <nav class="filter-row" aria-label="Kategoriye göre filtrele">
-                        <a class="pill @(q.Category is null ? "active" : "")" href="@FilterUrl(null, q.Technology)">Tümü</a>
+                    <nav class="filter-row" aria-label="@L["Kategoriye göre filtrele"]">
+                        <a class="pill @(q.Category is null ? "active" : "")" href="@FilterUrl(null, q.Technology)">@L["Tümü"]</a>
                         @foreach (var c in Model.Categories)
                         {
                             <a class="pill @(q.Category == c.Value ? "active" : "")" href="@FilterUrl(q.Category == c.Value ? null : c.Value, q.Technology)" aria-current="@(q.Category == c.Value ? "true" : null)">
@@ -47,8 +47,8 @@
                 }
                 @if (Model.Technologies.Count > 0)
                 {
-                    <nav class="filter-row filter-row-scroll" aria-label="Teknolojiye göre filtrele">
-                        <span class="filter-label muted small">Teknoloji</span>
+                    <nav class="filter-row filter-row-scroll" aria-label="@L["Teknolojiye göre filtrele"]">
+                        <span class="filter-label muted small">@L["Teknoloji"]</span>
                         @foreach (var t in Model.Technologies)
                         {
                             <a class="pill pill-sm @(q.Technology == t.Value ? "active" : "")" href="@FilterUrl(q.Category, q.Technology == t.Value ? null : t.Value)" aria-current="@(q.Technology == t.Value ? "true" : null)">
@@ -66,8 +66,8 @@
                 <div class="empty-icon" aria-hidden="true">
                     <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
                 </div>
-                <h3>@(q.IsFiltered ? "Bu filtreye uyan proje yok" : "Projeler yolda")</h3>
-                <p class="muted">@(q.IsFiltered ? "Başka bir kategori ya da teknoloji seçmeyi dene." : "Yakında burada çalışmalarımı paylaşacağım.")</p>
+                <h3>@(q.IsFiltered ? L["Bu filtreye uyan proje yok"] : L["Projeler yolda"])</h3>
+                <p class="muted">@(q.IsFiltered ? L["Başka bir kategori ya da teknoloji seçmeyi dene."] : L["Yakında burada çalışmalarımı paylaşacağım."])</p>
             </div>
         }
         else
@@ -81,15 +81,15 @@
 
             @if (list.TotalPages > 1)
             {
-                <nav class="pager" aria-label="Sayfalar">
+                <nav class="pager" aria-label="@L["Sayfalar"]">
                     @if (list.HasPrevious)
                     {
-                        <a class="btn btn-ghost" href="@FilterUrl(q.Category, q.Technology, list.Page - 1)" rel="prev">← Önceki</a>
+                        <a class="btn btn-ghost" href="@FilterUrl(q.Category, q.Technology, list.Page - 1)" rel="prev">@L["← Önceki"]</a>
                     }
-                    <span class="muted small">Sayfa @list.Page / @list.TotalPages</span>
+                    <span class="muted small">@L["Sayfa {0} / {1}", list.Page, list.TotalPages]</span>
                     @if (list.HasNext)
                     {
-                        <a class="btn btn-ghost" href="@FilterUrl(q.Category, q.Technology, list.Page + 1)" rel="next">Sonraki →</a>
+                        <a class="btn btn-ghost" href="@FilterUrl(q.Category, q.Technology, list.Page + 1)" rel="next">@L["Sonraki →"]</a>
                     }
                 </nav>
             }

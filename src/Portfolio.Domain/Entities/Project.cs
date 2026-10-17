@@ -60,6 +60,20 @@ public sealed class Project : BaseEntity
 
     public IReadOnlyCollection<Skill> Skills => _skills;
 
+    /// <summary>İsteğe bağlı İngilizce sürüm. Boş alanlarda Türkçe aslı gösterilir.</summary>
+    public string? TitleEn { get; private set; }
+
+    public string? SummaryEn { get; private set; }
+
+    public string? BodyEn { get; private set; }
+
+    public void UpdateEnglish(string? titleEn, string? summaryEn, string? bodyEn)
+    {
+        TitleEn = Guard.Optional(titleEn, nameof(TitleEn), TitleMaxLength);
+        SummaryEn = Guard.Optional(summaryEn, nameof(SummaryEn), SummaryMaxLength);
+        BodyEn = Guard.Optional(bodyEn, nameof(BodyEn), BodyMaxLength);
+    }
+
     public void UpdateDetails(string title, string? slug, string summary, string? body)
     {
         Title = Guard.Required(title, nameof(Title), TitleMaxLength);

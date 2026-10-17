@@ -20,18 +20,33 @@ public interface IExperienceService
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }
 
-internal sealed class ExperienceService(IApplicationDbContext db, IValidator<ExperienceInput> validator) : IExperienceService
+internal sealed class ExperienceService(
+    IApplicationDbContext db,
+    IValidator<ExperienceInput> validator,
+    ICurrentLanguage language) : IExperienceService
 {
-    public async Task<IReadOnlyList<ExperienceListItem>> ListAsync(CancellationToken cancellationToken = default) =>
-        await db.Experiences
+    public async Task<IReadOnlyList<ExperienceListItem>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        // İngilizce sayfada çevirisi olan alanlar İngilizce, olmayanlar Türkçe aslıyla gelir.
+        var english = language.IsEnglish;
+        return await db.Experiences
             .AsNoTracking()
             // Devam edenler en üstte, sonra en yeniden en eskiye.
             .OrderBy(e => e.EndDate != null)
             .ThenByDescending(e => e.StartDate)
             .ThenBy(e => e.SortOrder)
             .Select(e => new ExperienceListItem(
-                e.Id, e.Type, e.Title, e.Organization, e.Location, e.StartDate, e.EndDate, e.Description, e.Url))
+                e.Id,
+                e.Type,
+                english && e.TitleEn != null ? e.TitleEn : e.Title,
+                e.Organization,
+                e.Location,
+                e.StartDate,
+                e.EndDate,
+                english && e.DescriptionEn != null ? e.DescriptionEn : e.Description,
+                e.Url))
             .ToListAsync(cancellationToken);
+    }
 
     public async Task<ExperienceInput?> GetForEditAsync(Guid id, CancellationToken cancellationToken = default) =>
         await db.Experiences
@@ -47,7 +62,9 @@ internal sealed class ExperienceService(IApplicationDbContext db, IValidator<Exp
                 EndDate = e.EndDate,
                 Description = e.Description,
                 Url = e.Url,
-                SortOrder = e.SortOrder
+                SortOrder = e.SortOrder,
+                TitleEn = e.TitleEn,
+                DescriptionEn = e.DescriptionEn
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -102,7 +119,9 @@ internal sealed class ExperienceService(IApplicationDbContext db, IValidator<Exp
         return Result.Success();
     }
 
-    private static void Apply(Experience experience, ExperienceInput input) =>
+    private static void Apply(Experience experience, ExperienceInput input)
+    {
+        experience.UpdateEnglish(input.TitleEn, input.DescriptionEn);
         experience.Update(
             input.Type,
             input.Title,
@@ -113,4 +132,5 @@ internal sealed class ExperienceService(IApplicationDbContext db, IValidator<Exp
             input.Description,
             input.Url,
             input.SortOrder);
+    }
 }

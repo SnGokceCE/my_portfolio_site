@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\Portfolio.Domain\Portfolio.Domain.csproj" />
     <ProjectReference Include="..\..\src\Portfolio.Application\Portfolio.Application.csproj" />
     <ProjectReference Include="..\..\src\Portfolio.Infrastructure\Portfolio.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Portfolio.Web\Portfolio.Web.csproj" />
   </ItemGroup>
 
 </Project>

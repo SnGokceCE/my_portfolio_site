@@ -42,6 +42,20 @@
                 <span class="switch-track" aria-hidden="true"></span>
                 <span>Yayında</span>
             </label>
+            <fieldset class="field">
+                <legend>Yazının dili</legend>
+                <div class="segmented">
+                    <label>
+                        <input type="radio" name="Input.Language" value="@BlogPost.Turkish" checked="@(Model.Input.Language == BlogPost.Turkish)" />
+                        <span>Türkçe</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="Input.Language" value="@BlogPost.English" checked="@(Model.Input.Language == BlogPost.English)" />
+                        <span>English</span>
+                    </label>
+                </div>
+                <span asp-validation-for="Input.Language" class="field-error"></span>
+            </fieldset>
             <p class="hint">Taslaklar ziyaretçilere görünmez; RSS akışına da girmez.</p>
             <button type="submit" class="btn btn-primary btn-block">@(Model.IsNew ? "Yazıyı oluştur" : "Değişiklikleri kaydet")</button>
             @if (!Model.IsNew)

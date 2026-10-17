@@ -12,7 +12,8 @@ public sealed record PostCard(
     string? CoverImageUrl,
     IReadOnlyList<string> Tags,
     DateTimeOffset PublishedAt,
-    int ReadingMinutes);
+    int ReadingMinutes,
+    string Language);
 
 public sealed record BlogCatalogQuery(string? Tag = null, int Page = 1, int PageSize = 8);
 
@@ -31,7 +32,8 @@ public sealed record PostDetail(
     DateTimeOffset LastModified,
     ProjectLink? Previous,
     ProjectLink? Next,
-    IReadOnlyList<PostCard> Related);
+    IReadOnlyList<PostCard> Related,
+    string Language);
 
 public interface IPublicBlogQueries
 {
@@ -125,12 +127,13 @@ internal sealed class PublicBlogQueries(IApplicationDbContext db, IMarkdownRende
             post.UpdatedAt ?? post.CreatedAt,
             previous,
             next,
-            related);
+            related,
+            post.Language);
     }
 
     private IQueryable<BlogPost> Published() => db.BlogPosts.AsNoTracking().Where(p => p.IsPublished);
 
     private static IQueryable<PostCard> ToCards(IQueryable<BlogPost> query) =>
         query.Select(p => new PostCard(
-            p.Title, p.Slug, p.Excerpt, p.CoverImageUrl, p.Tags, p.PublishedAt ?? p.CreatedAt, p.ReadingMinutes));
+            p.Title, p.Slug, p.Excerpt, p.CoverImageUrl, p.Tags, p.PublishedAt ?? p.CreatedAt, p.ReadingMinutes, p.Language));
 }

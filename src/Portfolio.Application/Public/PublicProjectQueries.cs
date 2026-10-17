@@ -18,7 +18,10 @@ public interface IPublicProjectQueries
     Task<ProjectDetail?> GetBySlugAsync(string slug, bool includeDrafts, CancellationToken cancellationToken = default);
 }
 
-internal sealed class PublicProjectQueries(IApplicationDbContext db, IMarkdownRenderer markdown) : IPublicProjectQueries
+internal sealed class PublicProjectQueries(
+    IApplicationDbContext db,
+    IMarkdownRenderer markdown,
+    ICurrentLanguage language) : IPublicProjectQueries
 {
     private const int RelatedCount = 3;
 
@@ -38,9 +41,16 @@ internal sealed class PublicProjectQueries(IApplicationDbContext db, IMarkdownRe
 
         var page = await ToCards(OrderByDisplay(projects)).ToPagedListAsync(query.Page, query.PageSize, cancellationToken);
 
+        var english = language.IsEnglish;
         var categories = await db.Categories
             .AsNoTracking()
-            .Select(c => new { c.Slug, c.Name, c.SortOrder, Count = c.Projects.Count(p => p.IsPublished) })
+            .Select(c => new
+            {
+                c.Slug,
+                Name = english && c.NameEn != null ? c.NameEn : c.Name,
+                c.SortOrder,
+                Count = c.Projects.Count(p => p.IsPublished)
+            })
             .Where(c => c.Count > 0)
             .OrderBy(c => c.SortOrder).ThenBy(c => c.Name)
             .Select(c => new FilterOption(c.Slug, c.Name, c.Count))
@@ -76,11 +86,12 @@ internal sealed class PublicProjectQueries(IApplicationDbContext db, IMarkdownRe
             return null;
         }
 
+        var english = language.IsEnglish;
         ProjectLink? previous = null, next = null;
         if (project.IsPublished)
         {
             var sequence = await OrderByDisplay(Published())
-                .Select(p => new { p.Id, p.Title, p.Slug })
+                .Select(p => new { p.Id, Title = english && p.TitleEn != null ? p.TitleEn : p.Title, p.Slug })
                 .ToListAsync(cancellationToken);
             var index = sequence.FindIndex(p => p.Id == project.Id);
             if (index > 0)
@@ -102,18 +113,22 @@ internal sealed class PublicProjectQueries(IApplicationDbContext db, IMarkdownRe
             .Take(RelatedCount)
             .ToListAsync(cancellationToken);
 
+        // İngilizce istendi ama içerik çevrilmemişse Türkçe aslı gösterilir ve sayfada not düşülür.
+        var bodyEn = english ? project.BodyEn : null;
+        var translationMissing = english && (project.TitleEn is null || (project.Body is not null && bodyEn is null));
+
         return new ProjectDetail(
             project.Id,
-            project.Title,
+            english && project.TitleEn is not null ? project.TitleEn : project.Title,
             project.Slug,
-            project.Summary,
-            markdown.Render(project.Body),
+            english && project.SummaryEn is not null ? project.SummaryEn : project.Summary,
+            markdown.Render(bodyEn ?? project.Body),
             project.CoverImageUrl,
             project.RepositoryUrl,
             project.LiveUrl,
             project.StartedOn,
             project.CompletedOn,
-            project.Category?.Name,
+            english && project.Category?.NameEn is not null ? project.Category.NameEn : project.Category?.Name,
             project.Category?.Slug,
             project.Skills.OrderBy(s => s.SortOrder).ThenBy(s => s.Name).Select(s => s.Name).ToList(),
             project.IsPublished,
@@ -121,7 +136,8 @@ internal sealed class PublicProjectQueries(IApplicationDbContext db, IMarkdownRe
             project.UpdatedAt ?? project.CreatedAt,
             previous,
             next,
-            related);
+            related,
+            translationMissing);
     }
 
     private IQueryable<Project> Published() => db.Projects.AsNoTracking().Where(p => p.IsPublished);
@@ -133,17 +149,21 @@ internal sealed class PublicProjectQueries(IApplicationDbContext db, IMarkdownRe
     private static IOrderedQueryable<Project> ThenByDisplay(IOrderedQueryable<Project> query) =>
         query.ThenBy(p => p.SortOrder).ThenByDescending(p => p.PublishedAt);
 
-    private static IQueryable<ProjectCard> ToCards(IQueryable<Project> query) =>
-        query.Select(p => new ProjectCard(
+    private IQueryable<ProjectCard> ToCards(IQueryable<Project> query)
+    {
+        // Seçim SQL'de CASE WHEN olarak yapılır; çevirisi olmayan alan Türkçe aslıyla gelir.
+        var english = language.IsEnglish;
+        return query.Select(p => new ProjectCard(
             p.Id,
-            p.Title,
+            english && p.TitleEn != null ? p.TitleEn : p.Title,
             p.Slug,
-            p.Summary,
+            english && p.SummaryEn != null ? p.SummaryEn : p.Summary,
             p.CoverImageUrl,
-            p.Category != null ? p.Category.Name : null,
+            p.Category != null ? (english && p.Category.NameEn != null ? p.Category.NameEn : p.Category.Name) : null,
             p.Category != null ? p.Category.Slug : null,
             p.Skills.OrderBy(s => s.SortOrder).ThenBy(s => s.Name).Select(s => s.Name).ToList(),
             p.IsFeatured,
             p.StartedOn,
             p.CompletedOn));
+    }
 }

@@ -1,52 +1,68 @@
 ﻿@{
-    var title = ViewData["Title"] is string t ? $"{t} · Portfolyo" : "Portfolyo";
-    var description = ViewData["Description"] as string ?? "Projelerim, deneyimlerim ve yazılarım.";
-    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
-    var canonical = baseUrl + Context.Request.Path;
-    var ogImage = ViewData["OgImage"] is string image ? baseUrl + image : null;
+    var english = SiteCultures.IsEnglish(Context.Request);
+    var siteName = L["Portfolyo"].Value;
+    var title = ViewData["Title"] is string t ? $"{t} · {siteName}" : siteName;
+    var description = ViewData["Description"] as string ?? L["Projelerim, deneyimlerim ve yazılarım."].Value;
+    var origin = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var (turkishUrl, englishUrl) = SiteCultures.AlternateUrls(Context.Request);
+    var canonical = origin + (english ? englishUrl : turkishUrl).Split('?')[0];
+    var ogImage = ViewData["OgImage"] is string image ? origin + image : null;
     var navActive = ViewData["NavActive"] as string;
+
+    string? Active(string key) => navActive == key ? "active" : null;
+    string? Current(string key) => navActive == key ? "page" : null;
 }
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="@(english ? "en" : "tr")">
 <head>
     <partial name="_ThemeHead" />
     <title>@title</title>
     <meta name="description" content="@description" />
     <link rel="canonical" href="@canonical" />
-    <link rel="alternate" type="application/rss+xml" title="Blog RSS" href="/blog/rss.xml" />
-    <meta property="og:site_name" content="Portfolyo" />
+    @* Arama motorlarına aynı sayfanın diğer dildeki sürümünü bildirir. *@
+    <link rel="alternate" hreflang="tr" href="@(origin + turkishUrl.Split('?')[0])" />
+    <link rel="alternate" hreflang="en" href="@(origin + englishUrl.Split('?')[0])" />
+    <link rel="alternate" hreflang="x-default" href="@(origin + turkishUrl.Split('?')[0])" />
+    <link rel="alternate" type="application/rss+xml" title="@L["Blog RSS"]" href="~/blog/rss.xml" />
+    <meta property="og:site_name" content="@siteName" />
     <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
     <meta property="og:title" content="@title" />
     <meta property="og:description" content="@description" />
     <meta property="og:url" content="@canonical" />
-    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:locale" content="@(english ? "en_US" : "tr_TR")" />
+    <meta property="og:locale:alternate" content="@(english ? "tr_TR" : "en_US")" />
     @if (ogImage is not null)
     {
         <meta property="og:image" content="@ogImage" />
         <meta name="twitter:card" content="summary_large_image" />
     }
+    @await RenderSectionAsync("Head", required: false)
 </head>
 <body>
-    <a class="skip-link" href="#main">İçeriğe geç</a>
+    <a class="skip-link" href="#main">@L["İçeriğe geç"]</a>
 
     <header class="site-header" data-header>
         <div class="container header-inner">
             <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
                 <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
-                <span class="brand-text">portfolyo</span>
+                <span class="brand-text">@L["portfolyo"]</span>
             </a>
 
-            <nav class="site-nav" id="site-nav" data-nav aria-label="Ana menü">
-                <a href="/#hakkimda">Hakkımda</a>
-                <a asp-area="" asp-controller="Projects" asp-action="Index" class="@(navActive == "projects" ? "active" : "")" aria-current="@(navActive == "projects" ? "page" : null)">Projeler</a>
-                <a href="/#deneyim">Deneyim</a>
-                <a asp-area="" asp-controller="Blog" asp-action="Index" class="@(navActive == "blog" ? "active" : "")" aria-current="@(navActive == "blog" ? "page" : null)">Blog</a>
-                <a asp-area="" asp-controller="Contact" asp-action="Index" class="@(navActive == "contact" ? "active" : "")" aria-current="@(navActive == "contact" ? "page" : null)">İletişim</a>
+            <nav class="site-nav" id="site-nav" data-nav aria-label="@L["Ana menü"]">
+                <a href="~/#hakkimda">@L["Hakkımda"]</a>
+                <a asp-area="" asp-controller="Projects" asp-action="Index" class="@Active("projects")" aria-current="@Current("projects")">@L["Projeler"]</a>
+                <a href="~/#deneyim">@L["Deneyim"]</a>
+                <a asp-area="" asp-controller="Blog" asp-action="Index" class="@Active("blog")" aria-current="@Current("blog")">@L["Blog"]</a>
+                <a asp-area="" asp-controller="Contact" asp-action="Index" class="@Active("contact")" aria-current="@Current("contact")">@L["İletişim"]</a>
             </nav>
 
             <div class="header-actions">
+                <nav class="lang-switch" aria-label="@L["Dil"]">
+                    <a href="@turkishUrl" hreflang="tr" lang="tr" class="@(english ? null : "active")" aria-current="@(english ? null : "true")">TR</a>
+                    <a href="@englishUrl" hreflang="en" lang="en" class="@(english ? "active" : null)" aria-current="@(english ? "true" : null)">EN</a>
+                </nav>
                 <partial name="_ThemeToggle" />
-                <button type="button" class="icon-btn nav-toggle" data-nav-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Menüyü aç">
+                <button type="button" class="icon-btn nav-toggle" data-nav-toggle aria-controls="site-nav" aria-expanded="false" aria-label="@L["Menüyü aç"]" data-label-open="@L["Menüyü aç"]" data-label-close="@L["Menüyü kapat"]">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
                 </button>
             </div>

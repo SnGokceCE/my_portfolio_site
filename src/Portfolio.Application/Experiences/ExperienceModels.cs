@@ -34,6 +34,10 @@ public sealed class ExperienceInput
     public string? Url { get; set; }
 
     public int SortOrder { get; set; }
+
+    public string? TitleEn { get; set; }
+
+    public string? DescriptionEn { get; set; }
 }
 
 public sealed class ExperienceInputValidator : AbstractValidator<ExperienceInput>
@@ -51,5 +55,7 @@ public sealed class ExperienceInputValidator : AbstractValidator<ExperienceInput
             .WithMessage("Bitiş tarihi başlangıç tarihinden önce olamaz.");
         RuleFor(x => x.Description).MaximumLength(Experience.DescriptionMaxLength).WithName("Açıklama");
         RuleFor(x => x.Url).HttpUrl().WithName("Bağlantı");
+        RuleFor(x => x.TitleEn).MaximumLength(Experience.TitleMaxLength).WithName("Başlık (EN)");
+        RuleFor(x => x.DescriptionEn).MaximumLength(Experience.DescriptionMaxLength).WithName("Açıklama (EN)");
     }
 }

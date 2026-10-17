@@ -42,6 +42,17 @@ public sealed class SiteProfile : BaseEntity
 
     public bool IsOpenToWork { get; private set; }
 
+    /// <summary>İngilizce sayfalarda gösterilir; boşsa Türkçe aslı kullanılır.</summary>
+    public string? HeadlineEn { get; private set; }
+
+    public string? BioEn { get; private set; }
+
+    public void UpdateEnglish(string? headlineEn, string? bioEn)
+    {
+        HeadlineEn = Guard.Optional(headlineEn, nameof(HeadlineEn), HeadlineMaxLength);
+        BioEn = Guard.Optional(bioEn, nameof(BioEn), BioMaxLength);
+    }
+
     public void UpdateIdentity(string fullName, string headline, string? bio)
     {
         FullName = Guard.Required(fullName, nameof(FullName), FullNameMaxLength);

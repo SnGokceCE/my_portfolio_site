@@ -99,7 +99,10 @@ internal sealed class ProjectService(
             CompletedOn = project.CompletedOn,
             IsFeatured = project.IsFeatured,
             IsPublished = project.IsPublished,
-            SortOrder = project.SortOrder
+            SortOrder = project.SortOrder,
+            TitleEn = project.TitleEn,
+            SummaryEn = project.SummaryEn,
+            BodyEn = project.BodyEn
         };
 
         return new ProjectEditModel(input, project.CoverImageUrl, project.PublishedAt);
@@ -238,6 +241,7 @@ internal sealed class ProjectService(
         project.UpdateTimeline(input.StartedOn, input.CompletedOn);
         project.UpdateDisplay(input.CategoryId, input.IsFeatured, input.SortOrder);
         project.SetSkills(skills);
+        project.UpdateEnglish(input.TitleEn, input.SummaryEn, input.BodyEn);
 
         if (input.IsPublished)
         {

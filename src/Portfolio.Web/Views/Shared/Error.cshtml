@@ -1,17 +1,17 @@
 ﻿@model ErrorViewModel
 @{
-    ViewData["Title"] = "Hata";
+    ViewData["Title"] = L["Hata"].Value;
 }
 
 <section class="section status-page">
     <div class="container narrow center">
         <p class="status-code gradient-text">500</p>
-        <h1>Bir şeyler ters gitti</h1>
-        <p class="muted">İstek işlenirken beklenmeyen bir hata oluştu.</p>
+        <h1>@L["Bir şeyler ters gitti"]</h1>
+        <p class="muted">@L["İstek işlenirken beklenmeyen bir hata oluştu."]</p>
         @if (Model.ShowRequestId)
         {
-            <p class="muted mono">İstek kimliği: @Model.RequestId</p>
+            <p class="muted mono">@L["İstek kimliği: {0}", Model.RequestId ?? string.Empty]</p>
         }
-        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Ana sayfaya dön</a>
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">@L["Ana sayfaya dön"]</a>
     </div>
 </section>

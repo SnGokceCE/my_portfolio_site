@@ -24,6 +24,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
 
+    public DbSet<PageView> PageViews => Set<PageView>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

@@ -62,6 +62,12 @@ public sealed class ProjectInput
     public bool IsPublished { get; set; }
 
     public int SortOrder { get; set; }
+
+    public string? TitleEn { get; set; }
+
+    public string? SummaryEn { get; set; }
+
+    public string? BodyEn { get; set; }
 }
 
 /// <summary>Düzenleme formunun ihtiyaç duyduğu, girişte olmayan ek bilgiler.</summary>
@@ -77,6 +83,9 @@ public sealed class ProjectInputValidator : AbstractValidator<ProjectInput>
         RuleFor(x => x.Body).MaximumLength(Project.BodyMaxLength).WithName("İçerik");
         RuleFor(x => x.RepositoryUrl).HttpUrl().WithName("Kaynak kod adresi");
         RuleFor(x => x.LiveUrl).HttpUrl().WithName("Canlı adres");
+        RuleFor(x => x.TitleEn).MaximumLength(Project.TitleMaxLength).WithName("Başlık (EN)");
+        RuleFor(x => x.SummaryEn).MaximumLength(Project.SummaryMaxLength).WithName("Özet (EN)");
+        RuleFor(x => x.BodyEn).MaximumLength(Project.BodyMaxLength).WithName("İçerik (EN)");
         RuleFor(x => x.CompletedOn)
             .GreaterThanOrEqualTo(x => x.StartedOn)
             .When(x => x.StartedOn is not null && x.CompletedOn is not null)

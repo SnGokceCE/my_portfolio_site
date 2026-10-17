@@ -1,12 +1,11 @@
-using System.Globalization;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.FileProviders;
 using Portfolio.Application;
 using Portfolio.Infrastructure;
 using Portfolio.Infrastructure.Persistence.Seeding;
 using Portfolio.Infrastructure.Storage;
 using Portfolio.Web.Infrastructure;
+using Portfolio.Web.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +24,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
 });
 
+builder.Services.AddSiteLocalization();
 builder.Services.AddPortfolioRateLimiting();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllersWithViews(options =>
@@ -53,13 +53,8 @@ if (app.Configuration.GetValue("Database:MigrateOnStartup", defaultValue: app.En
 
 app.UseForwardedHeaders();
 
-var turkish = CultureInfo.GetCultureInfo("tr-TR");
-app.UseRequestLocalization(new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new RequestCulture(turkish),
-    SupportedCultures = [turkish],
-    SupportedUICultures = [turkish]
-});
+app.UseCulturePrefix();
+app.UseSiteLocalization();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -86,6 +81,7 @@ app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<PageViewTrackingMiddleware>();
 
 app.MapStaticAssets();
 app.MapHealthChecks("/health");

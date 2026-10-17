@@ -7,17 +7,21 @@ using Portfolio.Domain.Entities;
 
 namespace Portfolio.Application.SiteProfiles;
 
-internal sealed class SiteProfileService(IApplicationDbContext db, IValidator<SiteProfileInput> validator) : ISiteProfileService
+internal sealed class SiteProfileService(
+    IApplicationDbContext db,
+    IValidator<SiteProfileInput> validator,
+    ICurrentLanguage language) : ISiteProfileService
 {
     public async Task<SiteProfileDto> GetAsync(CancellationToken cancellationToken = default)
     {
+        var english = language.IsEnglish;
         var profile = await db.SiteProfiles
             .AsNoTracking()
             .OrderBy(p => p.CreatedAt)
             .Select(p => new SiteProfileDto(
                 p.FullName,
-                p.Headline,
-                p.Bio,
+                english && p.HeadlineEn != null ? p.HeadlineEn : p.Headline,
+                english && p.BioEn != null ? p.BioEn : p.Bio,
                 p.Location,
                 p.Email,
                 p.GitHubUrl,
@@ -30,7 +34,14 @@ internal sealed class SiteProfileService(IApplicationDbContext db, IValidator<Si
 
     public async Task<SiteProfileInput> GetForEditAsync(CancellationToken cancellationToken = default)
     {
-        var p = await GetAsync(cancellationToken);
+        // Düzenleme formu her iki dilin ham değerlerini görmeli; dile göre seçim yapan GetAsync kullanılmaz.
+        var p = await db.SiteProfiles.AsNoTracking().OrderBy(x => x.CreatedAt).FirstOrDefaultAsync(cancellationToken);
+        if (p is null)
+        {
+            var empty = SiteProfileDto.Empty;
+            return new SiteProfileInput { FullName = empty.FullName, Headline = empty.Headline };
+        }
+
         return new SiteProfileInput
         {
             FullName = p.FullName,
@@ -40,7 +51,9 @@ internal sealed class SiteProfileService(IApplicationDbContext db, IValidator<Si
             Email = p.Email,
             GitHubUrl = p.GitHubUrl,
             LinkedInUrl = p.LinkedInUrl,
-            IsOpenToWork = p.IsOpenToWork
+            IsOpenToWork = p.IsOpenToWork,
+            HeadlineEn = p.HeadlineEn,
+            BioEn = p.BioEn
         };
     }
 
@@ -61,6 +74,7 @@ internal sealed class SiteProfileService(IApplicationDbContext db, IValidator<Si
             profile.UpdateIdentity(input.FullName, input.Headline, input.Bio);
             profile.UpdateContact(input.Location, input.Email, input.GitHubUrl, input.LinkedInUrl);
             profile.SetOpenToWork(input.IsOpenToWork);
+            profile.UpdateEnglish(input.HeadlineEn, input.BioEn);
         });
         if (errors is not null)
         {

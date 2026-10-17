@@ -1,16 +1,16 @@
 @model ContactFormViewModel
 @{
-    ViewData["Title"] = "İletişim";
-    ViewData["Description"] = "Staj, iş birliği ya da sadece merhaba demek için bana ulaş.";
+    ViewData["Title"] = L["İletişim"].Value;
+    ViewData["Description"] = L["Staj, iş birliği ya da sadece merhaba demek için bana ulaş."].Value;
     ViewData["NavActive"] = "contact";
     var profile = Model.Profile;
 }
 
 <section class="page-hero">
     <div class="container">
-        <p class="eyebrow reveal">İletişim</p>
-        <h1 class="reveal">Birlikte bir şeyler üretelim</h1>
-        <p class="muted lead reveal">Staj, iş birliği, bir proje fikri ya da sadece merhaba — mesajını bekliyorum.</p>
+        <p class="eyebrow reveal">@L["İletişim"]</p>
+        <h1 class="reveal">@L["Birlikte bir şeyler üretelim"]</h1>
+        <p class="muted lead reveal">@L["Staj, iş birliği, bir proje fikri ya da sadece merhaba — mesajını bekliyorum."]</p>
     </div>
 </section>
 
@@ -19,26 +19,26 @@
         <aside class="contact-info reveal">
             @if (profile.IsOpenToWork)
             {
-                <span class="badge badge-live"><span class="pulse" aria-hidden="true"></span>Yeni fırsatlara açığım</span>
+                <span class="badge badge-live"><span class="pulse" aria-hidden="true"></span>@L["Yeni fırsatlara açığım"]</span>
             }
             <ul class="contact-list">
                 @if (profile.Email is not null)
                 {
                     <li>
                         <span class="contact-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg></span>
-                        <div><span class="muted small">E-posta</span><a class="link" href="mailto:@profile.Email">@profile.Email</a></div>
+                        <div><span class="muted small">@L["E-posta"]</span><a class="link" href="mailto:@profile.Email">@profile.Email</a></div>
                     </li>
                 }
                 @if (profile.Location is not null)
                 {
                     <li>
                         <span class="contact-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" /><circle cx="12" cy="10" r="2.5" /></svg></span>
-                        <div><span class="muted small">Konum</span><span>@profile.Location</span></div>
+                        <div><span class="muted small">@L["Konum"]</span><span>@profile.Location</span></div>
                     </li>
                 }
                 <li>
                     <span class="contact-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg></span>
-                    <div><span class="muted small">Yanıt süresi</span><span>Genellikle 1–2 iş günü</span></div>
+                    <div><span class="muted small">@L["Yanıt süresi"]</span><span>@L["Genellikle 1–2 iş günü"]</span></div>
                 </li>
             </ul>
             <div class="footer-links">
@@ -64,9 +64,9 @@
                     <div class="success-icon" aria-hidden="true">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
                     </div>
-                    <h2>Mesajın ulaştı, teşekkürler!</h2>
-                    <p class="muted">En kısa sürede e-posta ile dönüş yapacağım.</p>
-                    <a class="btn btn-ghost" asp-action="Index">Yeni mesaj gönder</a>
+                    <h2>@L["Mesajın ulaştı, teşekkürler!"]</h2>
+                    <p class="muted">@L["En kısa sürede e-posta ile dönüş yapacağım."]</p>
+                    <a class="btn btn-ghost" asp-action="Index">@L["Yeni mesaj gönder"]</a>
                 </div>
             }
             else
@@ -83,29 +83,29 @@
 
                     <div class="form-grid">
                         <div class="field">
-                            <label asp-for="Input.Name">Adın</label>
+                            <label asp-for="Input.Name">@L["Adın"]</label>
                             <input asp-for="Input.Name" autocomplete="name" maxlength="100" />
                             <span asp-validation-for="Input.Name" class="field-error"></span>
                         </div>
                         <div class="field">
-                            <label asp-for="Input.Email">E-posta</label>
+                            <label asp-for="Input.Email">@L["E-posta"]</label>
                             <input asp-for="Input.Email" type="email" autocomplete="email" maxlength="200" />
                             <span asp-validation-for="Input.Email" class="field-error"></span>
                         </div>
                     </div>
                     <div class="field">
-                        <label asp-for="Input.Subject">Konu <span class="muted">(isteğe bağlı)</span></label>
+                        <label asp-for="Input.Subject">@L["Konu"] <span class="muted">@L["(isteğe bağlı)"]</span></label>
                         <input asp-for="Input.Subject" maxlength="150" />
                         <span asp-validation-for="Input.Subject" class="field-error"></span>
                     </div>
                     <div class="field">
-                        <label asp-for="Input.Message">Mesaj</label>
+                        <label asp-for="Input.Message">@L["Mesaj"]</label>
                         <textarea asp-for="Input.Message" rows="7" maxlength="5000"></textarea>
                         <span asp-validation-for="Input.Message" class="field-error"></span>
                     </div>
-                    <p class="hint">Bilgilerin yalnızca sana dönüş yapmak için kullanılır, üçüncü kişilerle paylaşılmaz.</p>
-                    <button type="submit" class="btn btn-primary" data-submit>
-                        <span>Mesajı gönder</span>
+                    <p class="hint">@L["Bilgilerin yalnızca sana dönüş yapmak için kullanılır, üçüncü kişilerle paylaşılmaz."]</p>
+                    <button type="submit" class="btn btn-primary" data-submit data-sending-text="@L["Gönderiliyor…"]">
+                        <span>@L["Mesajı gönder"]</span>
                         <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z" /><path d="M22 2 11 13" /></svg>
                     </button>
                 </form>

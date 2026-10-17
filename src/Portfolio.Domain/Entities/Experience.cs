@@ -46,6 +46,16 @@ public sealed class Experience : BaseEntity
 
     public bool IsCurrent => EndDate is null;
 
+    public string? TitleEn { get; private set; }
+
+    public string? DescriptionEn { get; private set; }
+
+    public void UpdateEnglish(string? titleEn, string? descriptionEn)
+    {
+        TitleEn = Guard.Optional(titleEn, nameof(TitleEn), TitleMaxLength);
+        DescriptionEn = Guard.Optional(descriptionEn, nameof(DescriptionEn), DescriptionMaxLength);
+    }
+
     public void Update(
         ExperienceType type,
         string title,

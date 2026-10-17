@@ -11,6 +11,8 @@ public sealed class BlogPost : BaseEntity
     public const int MaxTags = 8;
     public const int TagMaxLength = 30;
     public const int WordsPerMinute = 200;
+    public const string Turkish = "tr";
+    public const string English = "en";
 
     private BlogPost()
     {
@@ -40,6 +42,9 @@ public sealed class BlogPost : BaseEntity
 
     /// <summary>Listelerde gövdeyi yüklemeden gösterebilmek için içerik değiştikçe hesaplanır.</summary>
     public int ReadingMinutes { get; private set; } = 1;
+
+    /// <summary>Yazının dili ("tr" ya da "en"). Yazılar çevrilmez; listede dil rozeti gösterilir.</summary>
+    public string Language { get; private set; } = Turkish;
 
     public bool IsPublished { get; private set; }
 
@@ -78,6 +83,11 @@ public sealed class BlogPost : BaseEntity
     }
 
     public void SetCoverImage(string? url) => CoverImageUrl = url;
+
+    public void SetLanguage(string language) =>
+        Language = language is Turkish or English
+            ? language
+            : throw new DomainException("Yazı dili \"tr\" ya da \"en\" olmalı.");
 
     public void Publish(DateTimeOffset now)
     {

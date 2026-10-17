@@ -81,5 +81,23 @@
         </div>
     </section>
 
+    <details class="card form-card lang-card" open="@((Model.Input.TitleEn ?? Model.Input.DescriptionEn) is not null)">
+        <summary>
+            <span class="lang-flag" aria-hidden="true">EN</span>
+            <span>İngilizce sürüm <span class="muted">(isteğe bağlı)</span></span>
+        </summary>
+        <p class="hint">Sitenin <code>/en</code> adresinde gösterilir. Boş bırakılan alanlarda Türkçe aslı kullanılır.</p>
+        <div class="field">
+            <label asp-for="Input.TitleEn">Title</label>
+            <input asp-for="Input.TitleEn" maxlength="@Experience.TitleMaxLength" placeholder="e.g. Software Engineering Intern" />
+            <span asp-validation-for="Input.TitleEn" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.DescriptionEn">Description</label>
+            <textarea asp-for="Input.DescriptionEn" rows="5" maxlength="@Experience.DescriptionMaxLength" data-counter></textarea>
+            <span asp-validation-for="Input.DescriptionEn" class="field-error"></span>
+        </div>
+    </details>
+
     <partial name="_FormActions" model="Model.IsNew" />
 </form>

@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Portfolio.Application.Analytics;
 using Portfolio.Application.Common.Interfaces;
 using Portfolio.Application.Contact;
+using Portfolio.Infrastructure.Analytics;
 using Portfolio.Infrastructure.Content;
 using Portfolio.Infrastructure.Email;
+using Portfolio.Infrastructure.GitHub;
 using Portfolio.Infrastructure.Identity;
 using Portfolio.Infrastructure.Persistence;
 using Portfolio.Infrastructure.Persistence.Interceptors;
@@ -47,6 +50,26 @@ public static class DependencyInjection
         services.AddMemoryCache();
         services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
 
+        // GitHub: tipli HttpClient + standart dayanıklılık (zaman aşımı, üstel yeniden deneme, devre kesici).
+        services.Configure<GitHubOptions>(configuration.GetSection(GitHubOptions.SectionName));
+        services.AddHttpClient<IGitHubService, GitHubService>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.github.com/");
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("portfolio-site/1.0");
+                client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+                client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
+                if (configuration[$"{GitHubOptions.SectionName}:{nameof(GitHubOptions.Token)}"] is { Length: > 0 } token)
+                {
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+            })
+            .AddStandardResilienceHandler(resilience =>
+            {
+                resilience.AttemptTimeout.Timeout = TimeSpan.FromSeconds(4);
+                resilience.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                resilience.Retry.MaxRetryAttempts = 2;
+            });
+
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.AddSingleton<LocalFileStorage>();
         services.AddSingleton<IFileStorage>(sp => sp.GetRequiredService<LocalFileStorage>());
@@ -65,6 +88,12 @@ public static class DependencyInjection
         }
 
         services.AddHostedService<EmailDispatcher>();
+
+        // Ziyaret istatistikleri: istek kanala yazar, arka plan servisi anonimleştirip toplu kaydeder.
+        services.Configure<AnalyticsOptions>(configuration.GetSection(AnalyticsOptions.SectionName));
+        services.AddSingleton<ChannelPageViewRecorder>();
+        services.AddSingleton<IPageViewRecorder>(sp => sp.GetRequiredService<ChannelPageViewRecorder>());
+        services.AddHostedService<PageViewWriter>();
 
         services.Configure<ContactOptions>(configuration.GetSection(ContactOptions.SectionName));
         // Anahtarlar kalıcı saklanmazsa her yeniden başlatmada form jetonları ve oturum çerezleri geçersiz olur.

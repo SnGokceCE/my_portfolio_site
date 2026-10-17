@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Pano";
     var profile = (SiteProfileDto)ViewData["Profile"]!;
+    var traffic = (Portfolio.Application.Analytics.AnalyticsOverview)ViewData["Traffic"]!;
 }
 
 <div class="admin-grid">
@@ -41,6 +42,15 @@
         <p class="muted small">İletişim formundan</p>
     </a>
 
+    <a class="card traffic-card" asp-controller="Analytics" asp-action="Index" asp-route-days="7">
+        <div>
+            <p class="muted">Son 7 gün</p>
+            <p class="stat-value">@traffic.Views <span class="muted small">görüntüleme</span></p>
+            <p class="muted small">@traffic.Visitors tekil ziyaretçi · bugün @traffic.TodayViews</p>
+        </div>
+        @Portfolio.Web.Infrastructure.SvgChart.Sparkline(traffic.Daily.Select(d => d.Views).ToList())
+    </a>
+
     <section class="card recent-card">
         <h3>Son düzenlenen projeler</h3>
         @if (Model.RecentProjects.Count == 0)
@@ -69,7 +79,7 @@
             <li class="done">İçerik modeli ve admin CRUD (projeler, deneyimler, yetenekler)</li>
             <li class="done">Ziyaretçi sitesi: proje listesi, detaylar, zaman çizelgesi</li>
             <li class="done">Blog (Markdown) ve iletişim formu</li>
-            <li>Çoklu dil, SEO, GitHub entegrasyonu, istatistikler</li>
+            <li class="done">Çoklu dil, SEO, GitHub entegrasyonu, istatistikler</li>
             <li>Testler, CI/CD ve yayına alma</li>
         </ol>
     </section>

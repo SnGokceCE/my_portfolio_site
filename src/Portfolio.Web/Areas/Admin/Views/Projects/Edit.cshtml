@@ -34,6 +34,26 @@
             <span asp-validation-for="Input.Body" class="field-error"></span>
         </section>
 
+        <details class="card form-card lang-card" open="@((Model.Input.TitleEn ?? Model.Input.SummaryEn ?? Model.Input.BodyEn) is not null)">
+        <summary>
+            <span class="lang-flag" aria-hidden="true">EN</span>
+            <span>İngilizce sürüm <span class="muted">(isteğe bağlı)</span></span>
+        </summary>
+        <p class="hint">Sitenin <code>/en</code> adresinde gösterilir. Boş bırakılan alanlarda Türkçe aslı kullanılır.</p>
+        <div class="field">
+            <label asp-for="Input.TitleEn">Title</label>
+            <input asp-for="Input.TitleEn" maxlength="@Project.TitleMaxLength" />
+            <span asp-validation-for="Input.TitleEn" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.SummaryEn">Summary</label>
+            <textarea asp-for="Input.SummaryEn" rows="3" maxlength="@Project.SummaryMaxLength" data-counter></textarea>
+            <span asp-validation-for="Input.SummaryEn" class="field-error"></span>
+        </div>
+        <partial name="_MarkdownField" model='("Input.BodyEn", Model.Input.BodyEn, "Content", 12)' />
+        <span asp-validation-for="Input.BodyEn" class="field-error"></span>
+        </details>
+
         <section class="card form-card">
             <h2 class="form-card-title">Kullanılan teknolojiler</h2>
             @if (Model.Skills.Count == 0)

@@ -1,0 +1,151 @@
+@model Portfolio.Application.Analytics.AnalyticsOverview
+@using Portfolio.Web.Infrastructure
+@{
+    ViewData["Title"] = "İstatistikler";
+    var labels = Model.Daily.Select(d => d.Day.ToString("d MMM", System.Globalization.CultureInfo.CurrentCulture)).ToList();
+    var series = new List<SvgChart.Series>
+    {
+        new("Görüntüleme", Model.Daily.Select(d => d.Views).ToList(), "series-views", Area: true),
+        new("Ziyaretçi", Model.Daily.Select(d => d.Visitors).ToList(), "series-visitors", Area: false)
+    };
+
+    string Change(double? value) => value switch
+    {
+        null => "",
+        > 0 => $"▲ %{value:0.#}",
+        < 0 => $"▼ %{Math.Abs(value.Value):0.#}",
+        _ => "— %0"
+    };
+    string ChangeClass(double? value) => value switch { > 0 => "up", < 0 => "down", _ => "" };
+    string DeviceLabel(string key) => key switch { "Mobile" => "Mobil", "Tablet" => "Tablet", _ => "Masaüstü" };
+    string LanguageLabel(string key) => key == "en" ? "İngilizce" : "Türkçe";
+}
+
+<div class="page-head">
+    <nav class="tabs" aria-label="Dönem">
+        @foreach (var d in new[] { 7, 30, 90 })
+        {
+            <a class="@(Model.Days == d ? "active" : "")" asp-action="Index" asp-route-days="@d">Son @d gün</a>
+        }
+    </nav>
+    <p class="muted small privacy-note">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+        Çerezsiz ve anonim: IP adresi saklanmaz, ziyaretçi kimliği her gün sıfırlanır. Botlar, kendi ziyaretlerin ve “izleme” istemeyen tarayıcılar sayılmaz.
+    </p>
+</div>
+
+<div class="kpi-grid">
+    <section class="card kpi">
+        <p class="muted">Görüntüleme</p>
+        <p class="stat-value">@Model.Views</p>
+        <p class="small change @ChangeClass(Model.ViewsChange)">@if (Model.ViewsChange is null) { <span class="muted">Karşılaştırılacak önceki veri yok</span> } else { @Change(Model.ViewsChange) <span class="muted">önceki döneme göre</span> }</p>
+    </section>
+    <section class="card kpi">
+        <p class="muted">Tekil ziyaretçi <span class="hint">(günlük toplam)</span></p>
+        <p class="stat-value">@Model.Visitors</p>
+        <p class="small change @ChangeClass(Model.VisitorsChange)">@if (Model.VisitorsChange is null) { <span class="muted">Karşılaştırılacak önceki veri yok</span> } else { @Change(Model.VisitorsChange) <span class="muted">önceki döneme göre</span> }</p>
+    </section>
+    <section class="card kpi">
+        <p class="muted">Bugün</p>
+        <p class="stat-value">@Model.TodayViews</p>
+        <p class="small muted">görüntüleme</p>
+    </section>
+    <section class="card kpi">
+        <p class="muted">Ziyaret başına sayfa</p>
+        <p class="stat-value">@(Model.Visitors == 0 ? "0" : (Model.Views / (double)Model.Visitors).ToString("0.0"))</p>
+        <p class="small muted">ortalama</p>
+    </section>
+</div>
+
+<section class="card chart-card">
+    <header class="chart-head">
+        <h2>Günlük trafik</h2>
+        <ul class="chart-legend">
+            <li><span class="swatch series-views-swatch"></span>Görüntüleme</li>
+            <li><span class="swatch series-visitors-swatch"></span>Ziyaretçi</li>
+        </ul>
+    </header>
+    @if (Model.Views == 0)
+    {
+        <div class="empty-state">
+            <h3>Bu dönemde henüz ziyaret yok</h3>
+            <p class="muted">Site ziyaretçi aldıkça grafik burada oluşacak. (Yönetici olarak giriş yapmışken yaptığın gezintiler sayılmaz.)</p>
+        </div>
+    }
+    else
+    {
+        @SvgChart.Line(labels, series, ariaLabel: $"Son {Model.Days} günün günlük görüntüleme ve ziyaretçi grafiği")
+    }
+</section>
+
+<div class="analytics-grid">
+    <section class="card table-card">
+        <header class="table-card-head"><h2>En çok görüntülenen sayfalar</h2></header>
+        @if (Model.TopPages.Count == 0)
+        {
+            <p class="muted pad">Veri yok.</p>
+        }
+        else
+        {
+            var top = Model.TopPages.Max(p => p.Views);
+            <table class="table bar-table">
+                <thead><tr><th>Sayfa</th><th class="num">Görüntüleme</th><th class="num">Ziyaretçi</th></tr></thead>
+                <tbody>
+                    @foreach (var p in Model.TopPages)
+                    {
+                        <tr>
+                            <td><span class="bar" style="--w: @((100.0 * p.Views / top).ToString("0", System.Globalization.CultureInfo.InvariantCulture))%"></span><code>@p.Label</code></td>
+                            <td class="num">@p.Views</td>
+                            <td class="num">@p.Visitors</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </section>
+
+    <section class="card table-card">
+        <header class="table-card-head"><h2>Yönlendiren siteler</h2></header>
+        @if (Model.TopReferrers.Count == 0)
+        {
+            <p class="muted pad">Henüz dış siteden gelen ziyaret yok. LinkedIn veya CV'ndeki bağlantılardan gelenler burada görünür.</p>
+        }
+        else
+        {
+            var top = Model.TopReferrers.Max(p => p.Views);
+            <table class="table bar-table">
+                <thead><tr><th>Site</th><th class="num">Görüntüleme</th><th class="num">Ziyaretçi</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model.TopReferrers)
+                    {
+                        <tr>
+                            <td><span class="bar" style="--w: @((100.0 * r.Views / top).ToString("0", System.Globalization.CultureInfo.InvariantCulture))%"></span>@r.Label</td>
+                            <td class="num">@r.Views</td>
+                            <td class="num">@r.Visitors</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </section>
+
+    <section class="card">
+        <h2 class="form-card-title">Cihazlar</h2>
+        <ul class="share-list">
+            @foreach (var d in Model.Devices)
+            {
+                <li><span>@DeviceLabel(d.Label)</span><span class="share-bar"><span style="width: @d.Percent.ToString(System.Globalization.CultureInfo.InvariantCulture)%"></span></span><span class="muted small">%@d.Percent</span></li>
+            }
+        </ul>
+    </section>
+
+    <section class="card">
+        <h2 class="form-card-title">Site dili</h2>
+        <ul class="share-list">
+            @foreach (var l in Model.Languages)
+            {
+                <li><span>@LanguageLabel(l.Label)</span><span class="share-bar"><span style="width: @l.Percent.ToString(System.Globalization.CultureInfo.InvariantCulture)%"></span></span><span class="muted small">%@l.Percent</span></li>
+            }
+        </ul>
+    </section>
+</div>

@@ -1,0 +1,16 @@
+@model Portfolio.Application.Common.Interfaces.GitHubRepository
+@using Portfolio.Web.ViewComponents
+
+<section class="card aside-card repo-stats">
+    <p class="eyebrow">GitHub</p>
+    <a class="repo-name" href="@Model.Url" target="_blank" rel="noopener">@Model.FullName ↗</a>
+    <dl>
+        <div><dt>@L["Yıldız"]</dt><dd>★ @(Model.Stars.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))</dd></div>
+        <div><dt>@L["Çatal"]</dt><dd>⑂ @(Model.Forks.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))</dd></div>
+        @if (Model.Language is not null)
+        {
+            <div><dt>@L["Dil"]</dt><dd><span class="dot" style="background: @LanguageColors.For(Model.Language)"></span>@Model.Language</dd></div>
+        }
+        <div><dt>@L["Son güncelleme"]</dt><dd>@DisplayText.LongDate(Model.PushedAt)</dd></div>
+    </dl>
+</section>

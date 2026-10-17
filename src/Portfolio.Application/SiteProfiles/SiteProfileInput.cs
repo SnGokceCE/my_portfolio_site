@@ -21,6 +21,10 @@ public sealed class SiteProfileInput
     public string? LinkedInUrl { get; set; }
 
     public bool IsOpenToWork { get; set; }
+
+    public string? HeadlineEn { get; set; }
+
+    public string? BioEn { get; set; }
 }
 
 public sealed class SiteProfileInputValidator : AbstractValidator<SiteProfileInput>
@@ -36,6 +40,8 @@ public sealed class SiteProfileInputValidator : AbstractValidator<SiteProfileInp
             .WithMessage("Geçerli bir e-posta adresi gir.")
             .MaximumLength(SiteProfile.UrlMaxLength)
             .WithName("E-posta");
+        RuleFor(x => x.HeadlineEn).MaximumLength(SiteProfile.HeadlineMaxLength).WithName("Unvan (EN)");
+        RuleFor(x => x.BioEn).MaximumLength(SiteProfile.BioMaxLength).WithName("Biyografi (EN)");
         RuleFor(x => x.GitHubUrl).HttpUrl().WithName("GitHub adresi");
         RuleFor(x => x.LinkedInUrl).HttpUrl().WithName("LinkedIn adresi");
     }

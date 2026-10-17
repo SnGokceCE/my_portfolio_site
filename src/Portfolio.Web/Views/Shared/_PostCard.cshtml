@@ -11,7 +11,11 @@
         <div class="post-meta muted small">
             <time datetime="@Model.PublishedAt.ToString("yyyy-MM-dd")">@DisplayText.LongDate(Model.PublishedAt)</time>
             <span aria-hidden="true">·</span>
-            <span>@Model.ReadingMinutes dk okuma</span>
+            <span>@L["{0} dk okuma", Model.ReadingMinutes]</span>
+            @if (Model.Language != (SiteCultures.IsEnglish(Context.Request) ? "en" : "tr"))
+            {
+                <span class="lang-badge" title="@L["Yazının dili"]">@DisplayText.LanguageBadge(Model.Language)</span>
+            }
         </div>
         <h3 class="post-title">
             <a asp-controller="Blog" asp-action="Detail" asp-route-slug="@Model.Slug" class="stretched-link">@Model.Title</a>
@@ -19,7 +23,7 @@
         <p class="muted post-excerpt">@Model.Excerpt</p>
         @if (Model.Tags.Count > 0)
         {
-            <ul class="tech-list" aria-label="Etiketler">
+            <ul class="tech-list" aria-label="@L["Etiketler"]">
                 @foreach (var tag in Model.Tags.Take(4))
                 {
                     <li><a asp-controller="Blog" asp-action="Index" asp-route-etiket="@tag">#@tag</a></li>

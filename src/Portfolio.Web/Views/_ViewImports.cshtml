@@ -1,8 +1,12 @@
 ﻿@using Portfolio.Web
 @using Portfolio.Web.Models
+@using Portfolio.Web.Localization
+@using Portfolio.Web.Infrastructure
 @using Portfolio.Application.SiteProfiles
 @using Portfolio.Application.Public
 @using Portfolio.Application.Experiences
 @using Portfolio.Application.Skills
 @using Portfolio.Domain.Entities
+@using Microsoft.Extensions.Localization
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IStringLocalizer<SharedResource> L

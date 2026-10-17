@@ -16,6 +16,7 @@ internal sealed class BlogPostConfiguration : IEntityTypeConfiguration<BlogPost>
         builder.Property(p => p.Excerpt).HasMaxLength(BlogPost.ExcerptMaxLength).IsRequired();
         builder.Property(p => p.Body).HasMaxLength(BlogPost.BodyMaxLength).IsRequired();
         builder.Property(p => p.CoverImageUrl).HasMaxLength(Guard.UrlMaxLength);
+        builder.Property(p => p.Language).HasMaxLength(2).HasDefaultValue(BlogPost.Turkish).IsRequired();
 
         // PostgreSQL'de text[] dizisi olarak saklanır; GIN indeksi etikete göre filtrelemeyi hızlandırır.
         builder.Property(p => p.Tags).IsRequired();
@@ -23,6 +24,24 @@ internal sealed class BlogPostConfiguration : IEntityTypeConfiguration<BlogPost>
 
         builder.HasIndex(p => p.Slug).IsUnique();
         builder.HasIndex(p => new { p.IsPublished, p.PublishedAt });
+    }
+}
+
+internal sealed class PageViewConfiguration : IEntityTypeConfiguration<PageView>
+{
+    public void Configure(EntityTypeBuilder<PageView> builder)
+    {
+        builder.ToTable("page_views");
+        builder.Property(v => v.Id).ValueGeneratedNever();
+        builder.Property(v => v.Path).HasMaxLength(PageView.PathMaxLength).IsRequired();
+        builder.Property(v => v.ReferrerHost).HasMaxLength(PageView.ReferrerMaxLength);
+        builder.Property(v => v.VisitorHash).HasMaxLength(PageView.VisitorHashLength).IsFixedLength().IsRequired();
+        builder.Property(v => v.Device).HasConversion<string>().HasMaxLength(10);
+        builder.Property(v => v.Language).HasMaxLength(2).IsRequired();
+
+        // Raporlar hep gün aralığıyla sorgulanır.
+        builder.HasIndex(v => v.Day);
+        builder.HasIndex(v => new { v.Day, v.Path });
     }
 }
 

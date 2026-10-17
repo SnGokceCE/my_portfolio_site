@@ -215,6 +215,14 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_published");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasDefaultValue("tr")
+                        .HasColumnName("language");
+
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at");
@@ -277,6 +285,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)")
                         .HasColumnName("name");
+
+                    b.Property<string>("NameEn")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name_en");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -371,6 +384,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(4000)")
                         .HasColumnName("description");
 
+                    b.Property<string>("DescriptionEn")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description_en");
+
                     b.Property<DateOnly?>("EndDate")
                         .HasColumnType("date")
                         .HasColumnName("end_date");
@@ -400,6 +418,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(120)")
                         .HasColumnName("title");
 
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title_en");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -424,6 +447,70 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Portfolio.Domain.Entities.PageView", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly>("Day")
+                        .HasColumnType("date")
+                        .HasColumnName("day");
+
+                    b.Property<string>("Device")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("device");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("language");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("path");
+
+                    b.Property<string>("ReferrerHost")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("referrer_host");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("VisitorHash")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character(16)")
+                        .HasColumnName("visitor_hash")
+                        .IsFixedLength();
+
+                    b.HasKey("Id")
+                        .HasName("pk_page_views");
+
+                    b.HasIndex("Day")
+                        .HasDatabaseName("ix_page_views_day");
+
+                    b.HasIndex("Day", "Path")
+                        .HasDatabaseName("ix_page_views_day_path");
+
+                    b.ToTable("page_views", (string)null);
+                });
+
             modelBuilder.Entity("Portfolio.Domain.Entities.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -434,6 +521,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50000)
                         .HasColumnType("character varying(50000)")
                         .HasColumnName("body");
+
+                    b.Property<string>("BodyEn")
+                        .HasMaxLength(50000)
+                        .HasColumnType("character varying(50000)")
+                        .HasColumnName("body_en");
 
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid")
@@ -494,11 +586,21 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(300)")
                         .HasColumnName("summary");
 
+                    b.Property<string>("SummaryEn")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("summary_en");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("title");
+
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title_en");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -536,6 +638,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("bio");
 
+                    b.Property<string>("BioEn")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("bio_en");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -561,6 +668,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)")
                         .HasColumnName("headline");
+
+                    b.Property<string>("HeadlineEn")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("headline_en");
 
                     b.Property<bool>("IsOpenToWork")
                         .HasColumnType("boolean")

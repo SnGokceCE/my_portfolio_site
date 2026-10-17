@@ -17,5 +17,7 @@ internal sealed class SiteProfileConfiguration : IEntityTypeConfiguration<SitePr
         builder.Property(p => p.Email).HasMaxLength(SiteProfile.UrlMaxLength);
         builder.Property(p => p.GitHubUrl).HasMaxLength(SiteProfile.UrlMaxLength);
         builder.Property(p => p.LinkedInUrl).HasMaxLength(SiteProfile.UrlMaxLength);
+        builder.Property(p => p.HeadlineEn).HasMaxLength(SiteProfile.HeadlineMaxLength);
+        builder.Property(p => p.BioEn).HasMaxLength(SiteProfile.BioMaxLength);
     }
 }

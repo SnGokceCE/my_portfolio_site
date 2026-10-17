@@ -51,4 +51,5 @@ public sealed record ProjectDetail(
     DateTimeOffset LastModified,
     ProjectLink? Previous,
     ProjectLink? Next,
-    IReadOnlyList<ProjectCard> Related);
+    IReadOnlyList<ProjectCard> Related,
+    bool IsTranslationMissing = false);

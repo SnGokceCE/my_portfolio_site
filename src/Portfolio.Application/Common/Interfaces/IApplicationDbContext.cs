@@ -24,5 +24,7 @@ public interface IApplicationDbContext
 
     DbSet<ContactMessage> ContactMessages { get; }
 
+    DbSet<PageView> PageViews { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -15,6 +15,7 @@
     <PackageReference Include="Markdig" Version="1.4.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.13" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- MailKit'in dolaylı çektiği 10.0.0 sürümünde bilinen güvenlik açıkları var; yamalı sürüm sabitlendi. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />

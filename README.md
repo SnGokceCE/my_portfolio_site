@@ -13,6 +13,10 @@ Projelerimi, deneyimlerimi ve yazılarımı sergileyen, içeriği kendi yönetim
 | İçerik | Markdig (Markdown), HtmlSanitizer (XSS koruması), IMemoryCache |
 | Test | xUnit, EF Core InMemory, FakeTimeProvider |
 | E-posta | MailKit (SMTP), `Channel<T>` tabanlı kuyruk + arka plan servisi, geliştirmede Mailpit |
+| Çoklu dil | Türkçe/İngilizce, `/en` ön eki, JSON tabanlı yerelleştirici, içerik için isteğe bağlı İngilizce alanlar |
+| SEO | Çok dilli `sitemap.xml` (hreflang), `robots.txt`, JSON-LD (Person, WebSite, BlogPosting, SoftwareSourceCode, BreadcrumbList), Open Graph |
+| Entegrasyon | GitHub REST API (tipli `HttpClient` + `Microsoft.Extensions.Http.Resilience`, önbellek) |
+| İstatistik | Çerezsiz, IP saklamayan ziyaret istatistikleri, sunucu tarafında çizilen SVG grafikler |
 | Altyapı | Docker, Docker Compose, sağlık kontrolü (`/health`), ASP.NET Core Rate Limiting |
 
 ## Mimari
@@ -46,6 +50,10 @@ Web  ──►  Infrastructure  ──►  Application  ──►  Domain
 - **Katmanlı spam koruması (iletişim formu):** CSRF jetonu → bal küpü (honeypot) alanı → Data Protection ile şifrelenmiş zaman tuzağı (3 sn'den hızlı ya da 2 saatten eski formlar) → IP başına istek sınırı (10 dk'da 5) → içerik sezgileri (çok bağlantı, şüpheli kelimeler). Botlara her durumda "başarılı" yanıtı verilir; hangi kurala takıldıklarını öğrenemezler. Şüpheli mesajlar silinmez, "Spam" klasörüne düşer.
 - **Asenkron e-posta:** Form isteği SMTP'yi beklemez; mesaj kuyruğa yazılır, `EmailDispatcher` arka planda üstel geri çekilmeyle (2 sn, 4 sn…) yeniden deneyerek gönderir. SMTP çökse bile mesaj veritabanında kalır.
 - **Blog:** Etiketler PostgreSQL `text[]` dizisinde, GIN indeksiyle saklanır. Okuma süresi kayıt sırasında hesaplanır, RSS 2.0 akışı (`/blog/rss.xml`) sunulur. Editörde sitedeki işleyiciyle birebir aynı çıktıyı veren canlı Markdown önizleme vardır.
+- **Çoklu dil:** `/en` ile başlayan istekler bir ara katmanda `PathBase`'e taşınır; böylece `Url.Action`, tag helper'lar ve statik dosyalar ek kod gerekmeden `/en` önekli bağlantı üretir. Arayüz metinleri kaynak dili Türkçe olan bir JSON yerelleştiricide (`Localization/Translations/en.json`) tutulur. Bir birim testi, görünümlerdeki her `L["..."]` metninin çevirisi olduğunu ve `{0}` yer tutucularının korunduğunu denetler. İçerikte İngilizce alan boşsa Türkçe aslı gösterilir ve sayfada not düşülür.
+- **SEO:** Her sayfa iki dilde site haritasına girer ve `hreflang` ile birbirine bağlanır. JSON-LD verisi `System.Text.Json` ile üretilir; varsayılan kodlayıcı `<` karakterini kaçırdığı için içerikteki `</script>` betik bloğunu kapatamaz.
+- **GitHub entegrasyonu:** Profildeki GitHub adresinden kullanıcı adı çıkarılır; ana sayfada son güncellenen depolar ve dil dağılımı, proje detayında depo istatistikleri gösterilir. Yanıtlar 1 saat önbelleklenir. GitHub'a ulaşılamazsa son başarılı veri, o da yoksa hiçbir şey gösterilmez; sayfa asla hata vermez.
+- **Gizlilik dostu istatistikler (KVKK/GDPR):** Çerez kullanılmaz, IP adresi saklanmaz. Tekil ziyaretçi `HMAC-SHA256(gizli anahtar, gün | IP | tarayıcı)` özetiyle sayılır; gün anahtara dahil olduğu için kişi günler arasında izlenemez. Botlar, admin'in kendi gezintisi, ön yüklemeler ve DNT/GPC gönderen tarayıcılar sayılmaz. Kayıtlar kuyruktan toplu yazılır, 400 günden eskiler otomatik silinir.
 - **Güvenlik:** CSRF koruması (`ValidateAntiForgeryToken`), açık yönlendirme koruması, 5 hatalı denemede 15 dk hesap kilidi, `HttpOnly` çerez.
 
 ## Çalıştırma
@@ -68,7 +76,7 @@ dotnet tool restore
 dotnet run --project src/Portfolio.Web
 ```
 
-Site: <http://localhost:5011> · Projeler: `/projeler` · Blog: `/blog` · İletişim: `/iletisim` · Yönetim paneli: `/admin`
+Site: <http://localhost:5011> (İngilizce: `/en`) · Projeler: `/projeler` · Blog: `/blog` · İletişim: `/iletisim` · Yönetim paneli: `/admin` · Site haritası: `/sitemap.xml`
 
 Geliştirmede iletişim formundan giden bildirim e-postaları gerçek bir adrese gitmez; Mailpit arayüzünde görünür: <http://localhost:8025>
 
@@ -81,6 +89,20 @@ ADMIN_EMAIL=sen@ornek.com ADMIN_PASSWORD='GucluBirSifre!123' docker compose --pr
 ```
 
 Site: <http://localhost:8080>
+
+### Yapılandırma
+
+Canlı ortamda ortam değişkenleriyle verilir (`__` bölüm ayırıcıdır):
+
+| Ayar | Açıklama |
+| --- | --- |
+| `ConnectionStrings__Default` | PostgreSQL bağlantısı |
+| `Seed__AdminEmail`, `Seed__AdminPassword` | İlk açılışta oluşturulacak admin hesabı |
+| `Email__SmtpHost`, `Email__SmtpPort`, `Email__Username`, `Email__Password`, `Email__FromAddress` | SMTP; boşsa e-postalar yalnızca loglanır |
+| `Contact__NotifyEmail` | İletişim formu bildirimlerinin gideceği adres (boşsa profildeki e-posta) |
+| `Analytics__Secret` | Ziyaretçi özeti anahtarı; boşsa her açılışta yeniden üretilir |
+| `GitHub__Token` | İsteğe bağlı; GitHub API sınırını saatte 60'tan 5000 isteğe çıkarır |
+| `DataProtection__KeysPath` | Şifreleme anahtarlarının kalıcı klasörü (Docker'da birim) |
 
 ### Testler
 
@@ -100,5 +122,5 @@ dotnet ef migrations add <Ad> -p src/Portfolio.Infrastructure -s src/Portfolio.W
 - [x] **2. İçerik modeli ve admin paneli:** Projeler, deneyimler, yetenekler için CRUD, görsel yükleme
 - [x] **3. Ziyaretçi sitesi:** Proje listesi ve filtreleme, detay sayfaları, zaman çizelgesi
 - [x] **4. Blog ve iletişim:** Markdown blog, iletişim formu, spam koruması, e-posta bildirimi
-- [ ] **5. Ekstralar:** Türkçe/İngilizce, SEO (sitemap, Open Graph), GitHub API entegrasyonu, ziyaret istatistikleri
+- [x] **5. Ekstralar:** Türkçe/İngilizce, SEO (sitemap, Open Graph), GitHub API entegrasyonu, ziyaret istatistikleri
 - [ ] **6. Kalite ve yayın:** Entegrasyon testleri, GitHub Actions CI, yayına alma
