@@ -33,7 +33,7 @@
 
             <div class="hero-actions reveal">
                 <a class="btn btn-primary" asp-controller="Projects" asp-action="Index">Projelerime göz at</a>
-                <a class="btn btn-ghost" href="#iletisim">İletişime geç</a>
+                <a class="btn btn-ghost" asp-controller="Contact" asp-action="Index">İletişime geç</a>
             </div>
 
             @if (profile.Location is not null)
@@ -189,6 +189,28 @@
                             }
                         </ul>
                     </section>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (Model.RecentPosts.Count > 0)
+{
+    <section class="section section-alt" id="yazilar">
+        <div class="container">
+            <header class="section-head section-head-row reveal">
+                <div>
+                    <p class="eyebrow">Blog</p>
+                    <h2>Son yazılar</h2>
+                    <p class="muted">Öğrendiklerimi ve deneyimlerimi yazıya döküyorum.</p>
+                </div>
+                <a class="btn btn-ghost" asp-controller="Blog" asp-action="Index">Tüm yazılar →</a>
+            </header>
+            <div class="post-grid">
+                @foreach (var post in Model.RecentPosts)
+                {
+                    <partial name="_PostCard" model="post" />
                 }
             </div>
         </div>

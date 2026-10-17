@@ -1,0 +1,30 @@
+@model PostCard
+
+<article class="post-card reveal">
+    @if (Model.CoverImageUrl is not null)
+    {
+        <div class="post-thumb">
+            <img src="@Model.CoverImageUrl" alt="" loading="lazy" />
+        </div>
+    }
+    <div class="post-body">
+        <div class="post-meta muted small">
+            <time datetime="@Model.PublishedAt.ToString("yyyy-MM-dd")">@DisplayText.LongDate(Model.PublishedAt)</time>
+            <span aria-hidden="true">·</span>
+            <span>@Model.ReadingMinutes dk okuma</span>
+        </div>
+        <h3 class="post-title">
+            <a asp-controller="Blog" asp-action="Detail" asp-route-slug="@Model.Slug" class="stretched-link">@Model.Title</a>
+        </h3>
+        <p class="muted post-excerpt">@Model.Excerpt</p>
+        @if (Model.Tags.Count > 0)
+        {
+            <ul class="tech-list" aria-label="Etiketler">
+                @foreach (var tag in Model.Tags.Take(4))
+                {
+                    <li><a asp-controller="Blog" asp-action="Index" asp-route-etiket="@tag">#@tag</a></li>
+                }
+            </ul>
+        }
+    </div>
+</article>

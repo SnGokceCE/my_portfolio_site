@@ -20,6 +20,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     public DbSet<Experience> Experiences => Set<Experience>();
 
+    public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
+
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

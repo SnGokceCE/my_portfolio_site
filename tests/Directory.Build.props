@@ -2,7 +2,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <!-- Test adlarında Metot_Durum_Beklenen kalıbı için alt çizgiye izin ver -->
-    <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <!-- CA1707: Test adlarında Metot_Durum_Beklenen kalıbı için alt çizgiye izin ver.
+         CA1001: Temizlik xUnit'in IAsyncLifetime.DisposeAsync'i ile yapılıyor; analizör bunu tanımıyor. -->
+    <NoWarn>$(NoWarn);CA1707;CA1001</NoWarn>
   </PropertyGroup>
 </Project>

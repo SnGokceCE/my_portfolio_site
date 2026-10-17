@@ -1,0 +1,89 @@
+@model BlogCatalog
+@{
+    var q = Model.Query;
+    var list = Model.Posts;
+    ViewData["Title"] = q.Tag is null ? "Blog" : $"#{q.Tag}";
+    ViewData["Description"] = "Öğrendiklerim, staj notlarım ve projelerimin arka planı.";
+    ViewData["NavActive"] = "blog";
+
+    string BlogUrl(string? tag, int page = 1) =>
+        Url.Action("Index", "Blog", new { etiket = tag, sayfa = page > 1 ? page : (int?)null })!;
+}
+
+<section class="page-hero">
+    <div class="container">
+        <p class="eyebrow reveal">Yazılar</p>
+        <h1 class="reveal">Blog</h1>
+        <p class="muted lead reveal">
+            @if (q.Tag is not null)
+            {
+                <span><strong>#@q.Tag</strong> etiketli @list.TotalCount yazı.</span>
+                <a class="link" href="@BlogUrl(null)">Tüm yazılar</a>
+            }
+            else
+            {
+                <span>Öğrendiklerim, staj notlarım ve projelerimin arka planı.</span>
+            }
+            <a class="link rss-link" asp-action="Rss">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg>
+                RSS
+            </a>
+        </p>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container blog-layout">
+        <div class="post-list">
+            @if (list.TotalCount == 0)
+            {
+                <div class="empty-state reveal">
+                    <div class="empty-icon" aria-hidden="true">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>
+                    </div>
+                    <h3>@(q.Tag is null ? "Henüz yazı yok" : "Bu etikette yazı yok")</h3>
+                    <p class="muted">Yakında burada yazılarımı paylaşacağım.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var post in list.Items)
+                {
+                    <partial name="_PostCard" model="post" />
+                }
+
+                @if (list.TotalPages > 1)
+                {
+                    <nav class="pager" aria-label="Sayfalar">
+                        @if (list.HasPrevious)
+                        {
+                            <a class="btn btn-ghost" href="@BlogUrl(q.Tag, list.Page - 1)" rel="prev">← Daha yeni</a>
+                        }
+                        <span class="muted small">Sayfa @list.Page / @list.TotalPages</span>
+                        @if (list.HasNext)
+                        {
+                            <a class="btn btn-ghost" href="@BlogUrl(q.Tag, list.Page + 1)" rel="next">Daha eski →</a>
+                        }
+                    </nav>
+                }
+            }
+        </div>
+
+        @if (Model.Tags.Count > 0)
+        {
+            <aside class="blog-aside">
+                <section class="card aside-card reveal">
+                    <p class="eyebrow">Etiketler</p>
+                    <div class="tag-cloud">
+                        @foreach (var tag in Model.Tags)
+                        {
+                            <a class="pill pill-sm @(q.Tag == tag.Value ? "active" : "")" href="@BlogUrl(q.Tag == tag.Value ? null : tag.Value)">
+                                #@tag.Label <span class="pill-count">@tag.Count</span>
+                            </a>
+                        }
+                    </div>
+                </section>
+            </aside>
+        }
+    </div>
+</section>

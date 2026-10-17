@@ -12,7 +12,8 @@ Projelerimi, deneyimlerimi ve yazılarımı sergileyen, içeriği kendi yönetim
 | Doğrulama | FluentValidation (Türkçe mesajlar) + domain seviyesinde koruma |
 | İçerik | Markdig (Markdown), HtmlSanitizer (XSS koruması), IMemoryCache |
 | Test | xUnit, EF Core InMemory, FakeTimeProvider |
-| Altyapı | Docker, Docker Compose, sağlık kontrolü (`/health`) |
+| E-posta | MailKit (SMTP), `Channel<T>` tabanlı kuyruk + arka plan servisi, geliştirmede Mailpit |
+| Altyapı | Docker, Docker Compose, sağlık kontrolü (`/health`), ASP.NET Core Rate Limiting |
 
 ## Mimari
 
@@ -42,6 +43,9 @@ Web  ──►  Infrastructure  ──►  Application  ──►  Domain
 - **Güvenli Markdown:** Proje içerikleri Markdown ile yazılır. Ham HTML kapalıdır, üretilen HTML ayrıca HtmlSanitizer'dan geçer (`javascript:` bağlantıları ve `onclick` gibi öznitelikler temizlenir). Başlıklardan otomatik içindekiler listesi ve okuma süresi çıkarılır.
 - **Taslak önizleme:** Yayımlanmamış projeler ziyaretçiye 404 döner; admin aynı adreste "Taslak önizleme" bandıyla görür.
 - **Aşamalı geliştirme:** Animasyonlar JavaScript ile eklenir ama içerik hiçbir koşulda betiğe bağımlı olarak gizli kalmaz; `prefers-reduced-motion` desteklenir.
+- **Katmanlı spam koruması (iletişim formu):** CSRF jetonu → bal küpü (honeypot) alanı → Data Protection ile şifrelenmiş zaman tuzağı (3 sn'den hızlı ya da 2 saatten eski formlar) → IP başına istek sınırı (10 dk'da 5) → içerik sezgileri (çok bağlantı, şüpheli kelimeler). Botlara her durumda "başarılı" yanıtı verilir; hangi kurala takıldıklarını öğrenemezler. Şüpheli mesajlar silinmez, "Spam" klasörüne düşer.
+- **Asenkron e-posta:** Form isteği SMTP'yi beklemez; mesaj kuyruğa yazılır, `EmailDispatcher` arka planda üstel geri çekilmeyle (2 sn, 4 sn…) yeniden deneyerek gönderir. SMTP çökse bile mesaj veritabanında kalır.
+- **Blog:** Etiketler PostgreSQL `text[]` dizisinde, GIN indeksiyle saklanır. Okuma süresi kayıt sırasında hesaplanır, RSS 2.0 akışı (`/blog/rss.xml`) sunulur. Editörde sitedeki işleyiciyle birebir aynı çıktıyı veren canlı Markdown önizleme vardır.
 - **Güvenlik:** CSRF koruması (`ValidateAntiForgeryToken`), açık yönlendirme koruması, 5 hatalı denemede 15 dk hesap kilidi, `HttpOnly` çerez.
 
 ## Çalıştırma
@@ -54,8 +58,8 @@ Web  ──►  Infrastructure  ──►  Application  ──►  Domain
 ### Geliştirme ortamı
 
 ```bash
-# 1. Veritabanını başlat
-docker compose up -d db
+# 1. Veritabanını ve e-posta test sunucusunu başlat
+docker compose up -d db mail
 
 # 2. EF Core aracını geri yükle (ilk seferde)
 dotnet tool restore
@@ -64,7 +68,9 @@ dotnet tool restore
 dotnet run --project src/Portfolio.Web
 ```
 
-Site: <http://localhost:5011> · Projeler: <http://localhost:5011/projeler> · Yönetim paneli: <http://localhost:5011/admin>
+Site: <http://localhost:5011> · Projeler: `/projeler` · Blog: `/blog` · İletişim: `/iletisim` · Yönetim paneli: `/admin`
+
+Geliştirmede iletişim formundan giden bildirim e-postaları gerçek bir adrese gitmez; Mailpit arayüzünde görünür: <http://localhost:8025>
 
 Geliştirme ortamındaki admin giriş bilgileri `src/Portfolio.Web/appsettings.Development.json` dosyasındaki `Seed` bölümündedir.
 
@@ -93,6 +99,6 @@ dotnet ef migrations add <Ad> -p src/Portfolio.Infrastructure -s src/Portfolio.W
 - [x] **1. İskelet:** Katmanlı mimari, PostgreSQL, Identity, Docker, tema ve temel düzen
 - [x] **2. İçerik modeli ve admin paneli:** Projeler, deneyimler, yetenekler için CRUD, görsel yükleme
 - [x] **3. Ziyaretçi sitesi:** Proje listesi ve filtreleme, detay sayfaları, zaman çizelgesi
-- [ ] **4. Blog ve iletişim:** Markdown blog, iletişim formu, spam koruması, e-posta bildirimi
+- [x] **4. Blog ve iletişim:** Markdown blog, iletişim formu, spam koruması, e-posta bildirimi
 - [ ] **5. Ekstralar:** Türkçe/İngilizce, SEO (sitemap, Open Graph), GitHub API entegrasyonu, ziyaret istatistikleri
 - [ ] **6. Kalite ve yayın:** Entegrasyon testleri, GitHub Actions CI, yayına alma

@@ -13,6 +13,7 @@
     <title>@title</title>
     <meta name="description" content="@description" />
     <link rel="canonical" href="@canonical" />
+    <link rel="alternate" type="application/rss+xml" title="Blog RSS" href="/blog/rss.xml" />
     <meta property="og:site_name" content="Portfolyo" />
     <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
     <meta property="og:title" content="@title" />
@@ -39,8 +40,8 @@
                 <a href="/#hakkimda">Hakkımda</a>
                 <a asp-area="" asp-controller="Projects" asp-action="Index" class="@(navActive == "projects" ? "active" : "")" aria-current="@(navActive == "projects" ? "page" : null)">Projeler</a>
                 <a href="/#deneyim">Deneyim</a>
-                <a href="/#yetenekler">Yetenekler</a>
-                <a href="#iletisim">İletişim</a>
+                <a asp-area="" asp-controller="Blog" asp-action="Index" class="@(navActive == "blog" ? "active" : "")" aria-current="@(navActive == "blog" ? "page" : null)">Blog</a>
+                <a asp-area="" asp-controller="Contact" asp-action="Index" class="@(navActive == "contact" ? "active" : "")" aria-current="@(navActive == "contact" ? "page" : null)">İletişim</a>
             </nav>
 
             <div class="header-actions">

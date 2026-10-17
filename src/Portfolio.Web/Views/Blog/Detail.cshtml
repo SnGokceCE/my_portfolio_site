@@ -1,0 +1,135 @@
+@model PostDetail
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["Description"] = Model.Excerpt;
+    ViewData["OgImage"] = Model.CoverImageUrl;
+    ViewData["OgType"] = "article";
+    ViewData["NavActive"] = "blog";
+}
+
+@if (!Model.IsPublished)
+{
+    <div class="preview-banner" role="status">
+        <div class="container">
+            <strong>Taslak önizleme</strong> — bu yazı henüz yayımlanmadı, yalnızca sen görüyorsun.
+            <a class="link" asp-area="Admin" asp-controller="Posts" asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a>
+        </div>
+    </div>
+}
+
+<article class="project-detail">
+    <header class="page-hero project-hero">
+        <div class="container narrow-wide">
+            <nav class="breadcrumb reveal" aria-label="Konum">
+                <a asp-action="Index">Blog</a>
+                @if (Model.Tags.Count > 0)
+                {
+                    <span aria-hidden="true">/</span>
+                    <a asp-action="Index" asp-route-etiket="@Model.Tags[0]">#@Model.Tags[0]</a>
+                }
+            </nav>
+            <h1 class="reveal">@Model.Title</h1>
+            <p class="lead muted reveal">@Model.Excerpt</p>
+            <div class="detail-meta reveal">
+                @if (Model.PublishedAt is { } published)
+                {
+                    <span>
+                        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                        <time datetime="@published.ToString("yyyy-MM-dd")">@DisplayText.LongDate(published)</time>
+                    </span>
+                }
+                <span>
+                    <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                    @Model.Body.ReadingMinutes dk okuma
+                </span>
+            </div>
+        </div>
+    </header>
+
+    @if (Model.CoverImageUrl is not null)
+    {
+        <div class="container narrow-wide">
+            <figure class="detail-cover reveal">
+                <img src="@Model.CoverImageUrl" alt="@Model.Title kapak görseli" />
+            </figure>
+        </div>
+    }
+
+    <div class="container narrow-wide detail-layout">
+        <div class="detail-content">
+            <div class="prose">@Html.Raw(Model.Body.Html)</div>
+
+            @if (Model.Tags.Count > 0)
+            {
+                <ul class="tech-list post-tags" aria-label="Etiketler">
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <li><a asp-action="Index" asp-route-etiket="@tag">#@tag</a></li>
+                    }
+                </ul>
+            }
+        </div>
+
+        <aside class="detail-aside">
+            @if (Model.Body.Headings.Count >= 2)
+            {
+                <nav class="toc card" aria-label="İçindekiler" data-toc>
+                    <p class="eyebrow">İçindekiler</p>
+                    <ol>
+                        @foreach (var h in Model.Body.Headings)
+                        {
+                            <li class="toc-l@(h.Level)"><a href="#@h.Id">@h.Text</a></li>
+                        }
+                    </ol>
+                </nav>
+            }
+            <section class="card aside-card">
+                <p class="eyebrow">Beğendin mi?</p>
+                <p class="muted small">Sorun ya da yorumun varsa bana yazabilirsin.</p>
+                <a class="btn btn-ghost btn-sm" asp-controller="Contact" asp-action="Index">İletişime geç →</a>
+            </section>
+        </aside>
+    </div>
+
+    @if (Model.Previous is not null || Model.Next is not null)
+    {
+        <nav class="container narrow-wide prev-next" aria-label="Diğer yazılar">
+            @if (Model.Previous is { } prev)
+            {
+                <a class="card prev" asp-action="Detail" asp-route-slug="@prev.Slug" rel="prev">
+                    <span class="muted small">← Önceki yazı</span>
+                    <strong>@prev.Title</strong>
+                </a>
+            }
+            else
+            {
+                <span></span>
+            }
+            @if (Model.Next is { } next)
+            {
+                <a class="card next" asp-action="Detail" asp-route-slug="@next.Slug" rel="next">
+                    <span class="muted small">Sonraki yazı →</span>
+                    <strong>@next.Title</strong>
+                </a>
+            }
+        </nav>
+    }
+</article>
+
+@if (Model.Related.Count > 0)
+{
+    <section class="section section-alt">
+        <div class="container narrow-wide">
+            <header class="section-head reveal">
+                <p class="eyebrow">Okumaya devam et</p>
+                <h2>İlgili yazılar</h2>
+            </header>
+            <div class="post-list">
+                @foreach (var post in Model.Related)
+                {
+                    <partial name="_PostCard" model="post" />
+                }
+            </div>
+        </div>
+    </section>
+}

@@ -11,6 +11,8 @@ public sealed record DashboardStats(
     int ExperienceCount,
     int SkillCount,
     int CategoryCount,
+    int BlogPostCount,
+    int UnreadMessageCount,
     IReadOnlyList<RecentProject> RecentProjects)
 {
     public int DraftProjectCount => ProjectCount - PublishedProjectCount;
@@ -31,6 +33,8 @@ internal sealed class DashboardService(IApplicationDbContext db) : IDashboardSer
         var experienceCount = await db.Experiences.CountAsync(cancellationToken);
         var skillCount = await db.Skills.CountAsync(cancellationToken);
         var categoryCount = await db.Categories.CountAsync(cancellationToken);
+        var blogPostCount = await db.BlogPosts.CountAsync(cancellationToken);
+        var unreadCount = await db.ContactMessages.CountAsync(m => !m.IsSpam && m.ReadAt == null, cancellationToken);
 
         var recent = await db.Projects
             .AsNoTracking()
@@ -39,6 +43,7 @@ internal sealed class DashboardService(IApplicationDbContext db) : IDashboardSer
             .Select(p => new RecentProject(p.Id, p.Title, p.IsPublished, p.UpdatedAt ?? p.CreatedAt))
             .ToListAsync(cancellationToken);
 
-        return new DashboardStats(projectCount, publishedCount, experienceCount, skillCount, categoryCount, recent);
+        return new DashboardStats(
+            projectCount, publishedCount, experienceCount, skillCount, categoryCount, blogPostCount, unreadCount, recent);
     }
 }

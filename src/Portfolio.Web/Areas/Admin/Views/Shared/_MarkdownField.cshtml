@@ -1,0 +1,19 @@
+@model (string Name, string? Value, string Label, int Rows)
+@* "Yaz | Önizle" sekmeli Markdown alanı. Önizleme sitede kullanılan aynı işleyiciden geçer. *@
+@{
+    var id = Model.Name.Replace('.', '_');
+}
+
+<div class="field md-field" data-markdown-field>
+    <div class="md-head">
+        <label for="@id">@Model.Label <span class="muted">(Markdown)</span></label>
+        <div class="md-tabs" role="tablist">
+            <button type="button" role="tab" class="active" aria-selected="true" data-md-tab="write">Yaz</button>
+            <button type="button" role="tab" aria-selected="false" data-md-tab="preview" data-preview-url="@Url.Action("Preview", "Markdown", new { area = "Admin" })">Önizle</button>
+        </div>
+    </div>
+    <textarea id="@id" name="@Model.Name" rows="@Model.Rows" class="mono" data-md-input
+              placeholder="## Başlık&#10;Paragraf metni, **kalın**, *italik*, [bağlantı](https://...)&#10;&#10;- liste&#10;- [ ] yapılacak">@Model.Value</textarea>
+    <div class="md-preview prose" data-md-preview hidden aria-live="polite"></div>
+    <span class="hint">Başlık için <code>##</code>, kod için <code>`kod`</code>, tablo ve yapılacaklar listesi desteklenir.</span>
+</div>

@@ -30,12 +30,8 @@
                 <span asp-validation-for="Input.Summary" class="field-error"></span>
             </div>
 
-            <div class="field">
-                <label asp-for="Input.Body">Detaylı içerik <span class="muted">(Markdown)</span></label>
-                <textarea asp-for="Input.Body" rows="16" class="mono" placeholder="## Problem&#10;Ne çözmek istedin?&#10;&#10;## Çözüm&#10;Nasıl yaptın, hangi kararları verdin?&#10;&#10;## Sonuç&#10;Ne öğrendin?"></textarea>
-                <span class="hint">Başlık için <code>##</code>, kalın için <code>**metin**</code>, bağlantı için <code>[metin](https://...)</code>.</span>
-                <span asp-validation-for="Input.Body" class="field-error"></span>
-            </div>
+            <partial name="_MarkdownField" model='("Input.Body", Model.Input.Body, "Detaylı içerik", 16)' />
+            <span asp-validation-for="Input.Body" class="field-error"></span>
         </section>
 
         <section class="card form-card">

@@ -1,0 +1,85 @@
+@model PostIndexViewModel
+@{
+    ViewData["Title"] = "Blog";
+    var q = Model.Query;
+    var list = Model.Posts;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+    string StatusUrl(ProjectStatusFilter status) => Url.Action("Index", new { search = q.Search, status })!;
+}
+
+<div class="page-head">
+    <nav class="tabs" aria-label="Duruma göre filtrele">
+        <a class="@(q.Status == ProjectStatusFilter.All ? "active" : "")" href="@StatusUrl(ProjectStatusFilter.All)">Tümü</a>
+        <a class="@(q.Status == ProjectStatusFilter.Published ? "active" : "")" href="@StatusUrl(ProjectStatusFilter.Published)">Yayında</a>
+        <a class="@(q.Status == ProjectStatusFilter.Draft ? "active" : "")" href="@StatusUrl(ProjectStatusFilter.Draft)">Taslak</a>
+    </nav>
+    <a class="btn btn-primary" asp-action="Create">+ Yeni yazı</a>
+</div>
+
+<form method="get" class="toolbar" role="search">
+    <input type="hidden" name="status" value="@q.Status" />
+    <div class="search-field">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <input type="search" name="search" value="@q.Search" placeholder="Başlık veya girişte ara…" aria-label="Ara" />
+    </div>
+    <button type="submit" class="btn btn-ghost">Ara</button>
+</form>
+
+@if (list.TotalCount == 0)
+{
+    <div class="empty-state">
+        <h3>@(string.IsNullOrWhiteSpace(q.Search) && q.Status == ProjectStatusFilter.All ? "Henüz yazı yok" : "Sonuç bulunamadı")</h3>
+        <p class="muted">Staj sürecini, öğrendiğin bir teknolojiyi ya da bir projenin hikâyesini anlatabilirsin.</p>
+        <a class="btn btn-primary" asp-action="Create">+ İlk yazını yaz</a>
+    </div>
+}
+else
+{
+    <div class="card table-card">
+        <table class="table table-projects">
+            <thead>
+                <tr>
+                    <th>Yazı</th>
+                    <th>Etiketler</th>
+                    <th>Durum</th>
+                    <th>Son güncelleme</th>
+                    <th class="actions"><span class="sr-only">İşlemler</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in list.Items)
+                {
+                    <tr>
+                        <td>
+                            <a class="row-title" asp-action="Edit" asp-route-id="@p.Id">@p.Title</a>
+                            <div class="muted small"><code class="slug">/blog/@p.Slug</code> · @p.ReadingMinutes dk</div>
+                        </td>
+                        <td class="small muted">@(p.Tags.Count == 0 ? "—" : string.Join(", ", p.Tags))</td>
+                        <td><span class="status @(p.IsPublished ? "status-live" : "status-draft")">@(p.IsPublished ? "Yayında" : "Taslak")</span></td>
+                        <td class="muted small">@DisplayText.Date(p.LastModified)</td>
+                        <td class="actions">
+                            <form asp-action="Publish" asp-route-id="@p.Id" method="post">
+                                <input type="hidden" name="published" value="@(!p.IsPublished)" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <button type="submit" class="icon-btn icon-btn-sm" title="@(p.IsPublished ? "Taslağa al" : "Yayımla")" aria-label="@(p.IsPublished ? "Taslağa al" : "Yayımla")">
+                                    <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                                </button>
+                            </form>
+                            <partial name="_EditLink" model="p.Id" />
+                            <partial name="_DeleteButton" model='("Posts", p.Id, $"“{p.Title}” kalıcı olarak silinecek.")' />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (list.TotalPages > 1)
+    {
+        <nav class="pagination" aria-label="Sayfalar">
+            <a class="btn btn-ghost btn-sm @(list.HasPrevious ? "" : "disabled")" href="@(list.HasPrevious ? Url.Action("Index", new { search = q.Search, status = q.Status, page = list.Page - 1 }) : null)">← Önceki</a>
+            <span class="muted small">Sayfa @list.Page / @list.TotalPages</span>
+            <a class="btn btn-ghost btn-sm @(list.HasNext ? "" : "disabled")" href="@(list.HasNext ? Url.Action("Index", new { search = q.Search, status = q.Status, page = list.Page + 1 }) : null)">Sonraki →</a>
+        </nav>
+    }
+}

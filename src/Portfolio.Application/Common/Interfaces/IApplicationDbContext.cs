@@ -20,5 +20,9 @@ public interface IApplicationDbContext
 
     DbSet<Experience> Experiences { get; }
 
+    DbSet<BlogPost> BlogPosts { get; }
+
+    DbSet<ContactMessage> ContactMessages { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,0 +1,57 @@
+@model MessageIndexViewModel
+@{
+    ViewData["Title"] = "Mesajlar";
+    var list = Model.Messages;
+    string TabUrl(MessageFilter f) => Url.Action("Index", new { filter = f })!;
+}
+
+<div class="page-head">
+    <nav class="tabs" aria-label="Klasör">
+        <a class="@(Model.Filter == MessageFilter.Inbox ? "active" : "")" href="@TabUrl(MessageFilter.Inbox)">Gelen kutusu</a>
+        <a class="@(Model.Filter == MessageFilter.Unread ? "active" : "")" href="@TabUrl(MessageFilter.Unread)">Okunmamış</a>
+        <a class="@(Model.Filter == MessageFilter.Spam ? "active" : "")" href="@TabUrl(MessageFilter.Spam)">Spam</a>
+    </nav>
+    <p class="muted small">Şüpheli mesajlar otomatik olarak Spam klasörüne düşer ve bildirim göndermez.</p>
+</div>
+
+@if (list.TotalCount == 0)
+{
+    <div class="empty-state">
+        <h3>@(Model.Filter == MessageFilter.Spam ? "Spam klasörü boş" : "Mesaj yok")</h3>
+        <p class="muted">Sitedeki iletişim formundan gelen mesajlar burada görünür.</p>
+    </div>
+}
+else
+{
+    <ul class="card message-list">
+        @foreach (var m in list.Items)
+        {
+            <li class="@(m.IsRead ? "" : "unread")">
+                <a asp-action="Detail" asp-route-id="@m.Id">
+                    <span class="avatar" aria-hidden="true">@m.Name[..1].ToUpperInvariant()</span>
+                    <span class="message-main">
+                        <span class="message-top">
+                            <strong>@m.Name</strong>
+                            <span class="muted small">@DisplayText.Date(m.ReceivedAt)</span>
+                        </span>
+                        <span class="message-subject">@(m.Subject ?? "(konu yok)")</span>
+                        <span class="muted small message-preview">@m.Preview</span>
+                    </span>
+                    @if (!m.IsRead)
+                    {
+                        <span class="unread-dot" title="Okunmamış"><span class="sr-only">Okunmamış</span></span>
+                    }
+                </a>
+            </li>
+        }
+    </ul>
+
+    @if (list.TotalPages > 1)
+    {
+        <nav class="pagination" aria-label="Sayfalar">
+            <a class="btn btn-ghost btn-sm @(list.HasPrevious ? "" : "disabled")" href="@(list.HasPrevious ? Url.Action("Index", new { filter = Model.Filter, page = list.Page - 1 }) : null)">← Önceki</a>
+            <span class="muted small">Sayfa @list.Page / @list.TotalPages</span>
+            <a class="btn btn-ghost btn-sm @(list.HasNext ? "" : "disabled")" href="@(list.HasNext ? Url.Action("Index", new { filter = Model.Filter, page = list.Page + 1 }) : null)">Sonraki →</a>
+        </nav>
+    }
+}

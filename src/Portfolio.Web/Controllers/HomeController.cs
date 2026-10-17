@@ -12,9 +12,11 @@ public class HomeController(
     ISiteProfileService profiles,
     IPublicProjectQueries projects,
     IExperienceService experiences,
-    ISkillService skills) : Controller
+    ISkillService skills,
+    IPublicBlogQueries blog) : Controller
 {
     private const int FeaturedCount = 6;
+    private const int RecentPostCount = 3;
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -22,7 +24,8 @@ public class HomeController(
             await profiles.GetAsync(cancellationToken),
             await projects.GetFeaturedAsync(FeaturedCount, cancellationToken),
             await experiences.ListAsync(cancellationToken),
-            await skills.ListAsync(cancellationToken));
+            await skills.ListAsync(cancellationToken),
+            await blog.GetRecentAsync(RecentPostCount, cancellationToken));
 
         return View(model);
     }

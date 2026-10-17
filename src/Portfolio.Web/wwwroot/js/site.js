@@ -81,6 +81,16 @@
         belowFold.forEach((element) => element.classList.add("visible"));
     }
 
+    // --- İletişim formu: çift tıklamayla iki kez gönderilmesin ---
+    document.querySelectorAll("[data-contact-form]").forEach((form) => {
+        form.addEventListener("submit", () => {
+            const button = form.querySelector("[data-submit]");
+            if (!button) return;
+            button.disabled = true;
+            button.querySelector("span").textContent = "Gönderiliyor…";
+        });
+    });
+
     // --- İçindekiler: okunmakta olan başlığı vurgula ---
     const toc = document.querySelector("[data-toc]");
     if (toc && "IntersectionObserver" in window) {

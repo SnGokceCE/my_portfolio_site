@@ -118,6 +118,42 @@
         sync();
     }
 
+    // --- Markdown alanı: "Yaz | Önizle" sekmeleri ---
+    // Önizleme, sitede kullanılan aynı işleyiciden (sanitize edilmiş) HTML olarak gelir.
+    document.querySelectorAll("[data-markdown-field]").forEach((field) => {
+        const input = field.querySelector("[data-md-input]");
+        const preview = field.querySelector("[data-md-preview]");
+        const tabs = field.querySelectorAll("[data-md-tab]");
+        const token = field.closest("form")?.querySelector("input[name=__RequestVerificationToken]")?.value;
+        let lastRendered = null;
+
+        const show = async (mode) => {
+            tabs.forEach((tab) => {
+                const active = tab.dataset.mdTab === mode;
+                tab.classList.toggle("active", active);
+                tab.setAttribute("aria-selected", String(active));
+            });
+            input.hidden = mode === "preview";
+            preview.hidden = mode !== "preview";
+            if (mode !== "preview" || lastRendered === input.value) return;
+
+            preview.classList.add("loading");
+            try {
+                const body = new URLSearchParams({ markdown: input.value, __RequestVerificationToken: token ?? "" });
+                const url = field.querySelector('[data-md-tab="preview"]').dataset.previewUrl;
+                const response = await fetch(url, { method: "POST", body });
+                preview.innerHTML = response.ok ? await response.text() : '<p class="field-error">Önizleme alınamadı.</p>';
+                lastRendered = input.value;
+            } catch {
+                preview.innerHTML = '<p class="field-error">Bağlantı hatası; önizleme alınamadı.</p>';
+            } finally {
+                preview.classList.remove("loading");
+            }
+        };
+
+        tabs.forEach((tab) => tab.addEventListener("click", () => show(tab.dataset.mdTab)));
+    });
+
     // --- Seçim değişince filtre formunu gönder ---
     document.querySelectorAll("[data-autosubmit]").forEach((select) =>
         select.addEventListener("change", () => select.form?.requestSubmit()));

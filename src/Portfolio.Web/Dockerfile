@@ -16,6 +16,8 @@ RUN dotnet publish src/Portfolio.Web/Portfolio.Web.csproj -c Release -o /app/pub
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
+# Kalıcı birimlerin (volume) bağlanacağı klasörler uygulama kullanıcısına ait olmalı.
+RUN mkdir -p /app/keys /app/wwwroot/uploads && chown -R app:app /app/keys /app/wwwroot/uploads
 USER app
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080

@@ -11,6 +11,7 @@
         <p class="muted">@profile.Headline</p>
         <div class="quick-actions">
             <a class="btn btn-primary btn-sm" asp-controller="Projects" asp-action="Create">+ Yeni proje</a>
+            <a class="btn btn-ghost btn-sm" asp-controller="Posts" asp-action="Create">+ Blog yazısı</a>
             <a class="btn btn-ghost btn-sm" asp-controller="Experiences" asp-action="Create">+ Deneyim</a>
             <a class="btn btn-ghost btn-sm" asp-controller="Profile" asp-action="Index">Profili düzenle</a>
         </div>
@@ -28,10 +29,16 @@
         <p class="muted small">Zaman çizelgesindeki kayıtlar</p>
     </a>
 
-    <a class="card stat-card" asp-controller="Skills" asp-action="Index">
-        <p class="muted">Yetenekler</p>
-        <p class="stat-value">@Model.SkillCount</p>
-        <p class="muted small">@Model.CategoryCount kategori tanımlı</p>
+    <a class="card stat-card" asp-controller="Posts" asp-action="Index">
+        <p class="muted">Blog yazıları</p>
+        <p class="stat-value">@Model.BlogPostCount</p>
+        <p class="muted small">@Model.SkillCount yetenek · @Model.CategoryCount kategori</p>
+    </a>
+
+    <a class="card stat-card @(Model.UnreadMessageCount > 0 ? "stat-highlight" : "")" asp-controller="Messages" asp-action="Index">
+        <p class="muted">Okunmamış mesaj</p>
+        <p class="stat-value">@Model.UnreadMessageCount</p>
+        <p class="muted small">İletişim formundan</p>
     </a>
 
     <section class="card recent-card">
@@ -60,8 +67,8 @@
         <ol class="roadmap">
             <li class="done">İskelet: katmanlı mimari, veritabanı, kimlik doğrulama, tema</li>
             <li class="done">İçerik modeli ve admin CRUD (projeler, deneyimler, yetenekler)</li>
-            <li>Ziyaretçi sitesi: proje listesi, detaylar, zaman çizelgesi</li>
-            <li>Blog (Markdown) ve iletişim formu</li>
+            <li class="done">Ziyaretçi sitesi: proje listesi, detaylar, zaman çizelgesi</li>
+            <li class="done">Blog (Markdown) ve iletişim formu</li>
             <li>Çoklu dil, SEO, GitHub entegrasyonu, istatistikler</li>
             <li>Testler, CI/CD ve yayına alma</li>
         </ol>

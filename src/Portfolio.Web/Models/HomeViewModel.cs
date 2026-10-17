@@ -9,4 +9,5 @@ public sealed record HomeViewModel(
     SiteProfileDto Profile,
     IReadOnlyList<ProjectCard> FeaturedProjects,
     IReadOnlyList<ExperienceListItem> Experiences,
-    IReadOnlyList<SkillListItem> Skills);
+    IReadOnlyList<SkillListItem> Skills,
+    IReadOnlyList<PostCard> RecentPosts);

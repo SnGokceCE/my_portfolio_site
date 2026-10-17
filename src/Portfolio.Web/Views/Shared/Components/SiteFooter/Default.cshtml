@@ -1,17 +1,14 @@
 @model SiteProfileDto
 
-<footer class="site-footer" id="iletisim">
+<footer class="site-footer">
     <div class="container footer-inner">
         <div>
             <p class="footer-title">Birlikte bir şeyler üretelim.</p>
-            <p class="muted">
+            <p class="muted footer-cta">
+                <a class="btn btn-primary btn-sm" asp-area="" asp-controller="Contact" asp-action="Index">Bana yaz →</a>
                 @if (Model.Email is not null)
                 {
                     <a class="link" href="mailto:@Model.Email">@Model.Email</a>
-                }
-                else
-                {
-                    <span>İletişim formu yakında burada olacak.</span>
                 }
             </p>
         </div>
