@@ -1,6 +1,10 @@
-﻿@model SiteProfileDto
+﻿@model HomeViewModel
 @{
-    ViewData["Description"] = Model.Headline;
+    var profile = Model.Profile;
+    ViewData["Description"] = profile.Headline;
+    var today = DateOnly.FromDateTime(DateTime.Today);
+    var skillGroups = Model.Skills.GroupBy(s => s.Group ?? "Diğer").ToList();
+    var topSkills = Model.Skills.OrderByDescending(s => s.Level).Take(3).Select(s => s.Name).ToList();
 }
 
 <section class="hero" id="hakkimda">
@@ -12,31 +16,31 @@
 
     <div class="container hero-inner">
         <div class="hero-copy">
-            @if (Model.IsOpenToWork)
+            @if (profile.IsOpenToWork)
             {
                 <span class="badge badge-live reveal"><span class="pulse" aria-hidden="true"></span>Yeni fırsatlara açığım</span>
             }
 
             <h1 class="hero-title reveal">
-                Merhaba, ben <span class="gradient-text">@Model.FullName</span>.
+                Merhaba, ben <span class="gradient-text">@profile.FullName</span>.
             </h1>
-            <p class="hero-headline reveal">@Model.Headline</p>
+            <p class="hero-headline reveal">@profile.Headline</p>
 
-            @if (!string.IsNullOrWhiteSpace(Model.Bio))
+            @if (!string.IsNullOrWhiteSpace(profile.Bio))
             {
-                <p class="hero-bio reveal">@Model.Bio</p>
+                <p class="hero-bio reveal">@profile.Bio</p>
             }
 
             <div class="hero-actions reveal">
-                <a class="btn btn-primary" href="#projeler">Projelerime göz at</a>
+                <a class="btn btn-primary" asp-controller="Projects" asp-action="Index">Projelerime göz at</a>
                 <a class="btn btn-ghost" href="#iletisim">İletişime geç</a>
             </div>
 
-            @if (Model.Location is not null)
+            @if (profile.Location is not null)
             {
                 <p class="hero-meta muted reveal">
                     <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" /><circle cx="12" cy="10" r="2.5" /></svg>
-                    @Model.Location
+                    @profile.Location
                 </p>
             }
         </div>
@@ -48,10 +52,10 @@
                     <code>profile.json</code>
                 </div>
                 <pre class="terminal-body"><code><span class="t-p">{</span>
-  <span class="t-k">"ad"</span>: <span class="t-s">"@Model.FullName"</span>,
-  <span class="t-k">"odak"</span>: [<span class="t-s">"yazılım"</span>, <span class="t-s">"tasarım"</span>, <span class="t-s">"öğrenmek"</span>],
-  <span class="t-k">"musait"</span>: <span class="t-b">@(Model.IsOpenToWork ? "true" : "false")</span>,
-  <span class="t-k">"kahve"</span>: <span class="t-n">∞</span>
+  <span class="t-k">"ad"</span>: <span class="t-s">"@profile.FullName"</span>,
+  <span class="t-k">"guclu_yonler"</span>: [@Html.Raw(string.Join(", ", (topSkills.Count > 0 ? topSkills : ["öğrenmek"]).Select(s => $"<span class=\"t-s\">\"{System.Net.WebUtility.HtmlEncode(s)}\"</span>")))],
+  <span class="t-k">"secili_proje"</span>: <span class="t-n">@Model.FeaturedProjects.Count</span>,
+  <span class="t-k">"musait"</span>: <span class="t-b">@(profile.IsOpenToWork ? "true" : "false")</span>
 <span class="t-p">}</span><span class="caret"></span></code></pre>
             </div>
         </div>
@@ -60,19 +64,37 @@
 
 <section class="section" id="projeler">
     <div class="container">
-        <header class="section-head reveal">
-            <p class="eyebrow">Seçilmiş çalışmalar</p>
-            <h2>Projeler</h2>
-            <p class="muted">Üzerinde çalıştığım, öğrendiğim ve gurur duyduğum işler.</p>
+        <header class="section-head section-head-row reveal">
+            <div>
+                <p class="eyebrow">Seçilmiş çalışmalar</p>
+                <h2>Projeler</h2>
+                <p class="muted">Üzerinde çalıştığım, öğrendiğim ve gurur duyduğum işler.</p>
+            </div>
+            @if (Model.FeaturedProjects.Count > 0)
+            {
+                <a class="btn btn-ghost" asp-controller="Projects" asp-action="Index">Tüm projeler →</a>
+            }
         </header>
 
-        <div class="empty-state reveal">
-            <div class="empty-icon" aria-hidden="true">
-                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+        @if (Model.FeaturedProjects.Count == 0)
+        {
+            <div class="empty-state reveal">
+                <div class="empty-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+                </div>
+                <h3>Projeler yolda</h3>
+                <p class="muted">Yakında burada çalışmalarımı paylaşacağım.</p>
             </div>
-            <h3>Projeler yolda</h3>
-            <p class="muted">Admin panelinden eklenen projeler burada kartlar halinde listelenecek.</p>
-        </div>
+        }
+        else
+        {
+            <div class="project-grid">
+                @foreach (var project in Model.FeaturedProjects)
+                {
+                    <partial name="_ProjectCard" model="project" />
+                }
+            </div>
+        }
     </div>
 </section>
 
@@ -81,15 +103,94 @@
         <header class="section-head reveal">
             <p class="eyebrow">Yolculuk</p>
             <h2>Deneyim</h2>
-            <p class="muted">Eğitim, staj ve iş deneyimlerimin zaman çizelgesi.</p>
+            <p class="muted">Eğitim, staj ve iş deneyimlerim.</p>
         </header>
 
-        <div class="empty-state reveal">
-            <div class="empty-icon" aria-hidden="true">
-                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+        @if (Model.Experiences.Count == 0)
+        {
+            <div class="empty-state reveal">
+                <div class="empty-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                </div>
+                <h3>Zaman çizelgesi yolda</h3>
+                <p class="muted">Deneyimler eklendiğinde burada görünecek.</p>
             </div>
-            <h3>Zaman çizelgesi yolda</h3>
-            <p class="muted">Deneyimler eklendiğinde burada etkileşimli bir zaman çizelgesi görünecek.</p>
-        </div>
+        }
+        else
+        {
+            <ol class="timeline">
+                @foreach (var e in Model.Experiences)
+                {
+                    <li class="timeline-entry reveal @(e.EndDate is null ? "is-current" : "")">
+                        <span class="timeline-marker" aria-hidden="true"></span>
+                        <div class="timeline-when">
+                            <span>@DisplayText.Period(e.StartDate, e.EndDate)</span>
+                            <span class="muted small">@DisplayText.Duration(e.StartDate, e.EndDate, today)</span>
+                        </div>
+                        <div class="timeline-card card">
+                            <div class="timeline-head">
+                                <span class="type-badge type-@e.Type.ToString().ToLowerInvariant()">@DisplayText.Label(e.Type)</span>
+                                @if (e.EndDate is null)
+                                {
+                                    <span class="badge badge-live"><span class="pulse" aria-hidden="true"></span>Devam ediyor</span>
+                                }
+                            </div>
+                            <h3>@e.Title</h3>
+                            <p class="timeline-org">
+                                @if (e.Url is not null)
+                                {
+                                    <a class="link" href="@e.Url" target="_blank" rel="noopener">@e.Organization ↗</a>
+                                }
+                                else
+                                {
+                                    <span>@e.Organization</span>
+                                }
+                                @if (e.Location is not null)
+                                {
+                                    <span class="muted"> · @e.Location</span>
+                                }
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(e.Description))
+                            {
+                                <p class="timeline-desc muted">@e.Description</p>
+                            }
+                        </div>
+                    </li>
+                }
+            </ol>
+        }
     </div>
 </section>
+
+@if (skillGroups.Count > 0)
+{
+    <section class="section" id="yetenekler">
+        <div class="container">
+            <header class="section-head reveal">
+                <p class="eyebrow">Araç kutusu</p>
+                <h2>Yetenekler</h2>
+                <p class="muted">Projelerimde kullandığım teknolojiler ve araçlar.</p>
+            </header>
+
+            <div class="skill-grid">
+                @foreach (var group in skillGroups)
+                {
+                    <section class="card skill-card reveal">
+                        <h3>@group.Key</h3>
+                        <ul>
+                            @foreach (var s in group)
+                            {
+                                <li>
+                                    <a class="skill-name" asp-controller="Projects" asp-action="Index" asp-route-teknoloji="@s.Name">@s.Name</a>
+                                    <span class="skill-level" style="--level: @s.Level" title="@DisplayText.Level(s.Level)">
+                                        <span class="sr-only">@DisplayText.Level(s.Level)</span>
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                }
+            </div>
+        </div>
+    </section>
+}

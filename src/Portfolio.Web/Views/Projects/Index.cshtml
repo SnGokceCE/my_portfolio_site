@@ -1,0 +1,98 @@
+@model ProjectCatalog
+@{
+    var q = Model.Query;
+    var list = Model.Projects;
+    ViewData["Title"] = q.Technology ?? Model.Categories.FirstOrDefault(c => c.Value == q.Category)?.Label ?? "Projeler";
+    ViewData["Description"] = "Geliştirdiğim projeler, kullandığım teknolojiler ve çözdüğüm problemler.";
+    ViewData["NavActive"] = "projects";
+
+    string FilterUrl(string? category, string? technology, int page = 1) =>
+        Url.Action("Index", "Projects", new { kategori = category, teknoloji = technology, sayfa = page > 1 ? page : (int?)null })!;
+}
+
+<section class="page-hero">
+    <div class="container">
+        <p class="eyebrow reveal">Portfolyo</p>
+        <h1 class="reveal">Projeler</h1>
+        <p class="muted lead reveal">
+            @if (q.IsFiltered)
+            {
+                <span>Filtreye uyan <strong>@list.TotalCount</strong> proje.</span>
+                <a class="link" href="@FilterUrl(null, null)">Filtreleri temizle</a>
+            }
+            else
+            {
+                <span>Üzerinde çalıştığım @list.TotalCount proje; problemden çözüme, kullandığım teknolojilerle birlikte.</span>
+            }
+        </p>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container">
+        @if (Model.Categories.Count > 0 || Model.Technologies.Count > 0)
+        {
+            <div class="filters reveal">
+                @if (Model.Categories.Count > 0)
+                {
+                    <nav class="filter-row" aria-label="Kategoriye göre filtrele">
+                        <a class="pill @(q.Category is null ? "active" : "")" href="@FilterUrl(null, q.Technology)">Tümü</a>
+                        @foreach (var c in Model.Categories)
+                        {
+                            <a class="pill @(q.Category == c.Value ? "active" : "")" href="@FilterUrl(q.Category == c.Value ? null : c.Value, q.Technology)" aria-current="@(q.Category == c.Value ? "true" : null)">
+                                @c.Label <span class="pill-count">@c.Count</span>
+                            </a>
+                        }
+                    </nav>
+                }
+                @if (Model.Technologies.Count > 0)
+                {
+                    <nav class="filter-row filter-row-scroll" aria-label="Teknolojiye göre filtrele">
+                        <span class="filter-label muted small">Teknoloji</span>
+                        @foreach (var t in Model.Technologies)
+                        {
+                            <a class="pill pill-sm @(q.Technology == t.Value ? "active" : "")" href="@FilterUrl(q.Category, q.Technology == t.Value ? null : t.Value)" aria-current="@(q.Technology == t.Value ? "true" : null)">
+                                @t.Label <span class="pill-count">@t.Count</span>
+                            </a>
+                        }
+                    </nav>
+                }
+            </div>
+        }
+
+        @if (list.TotalCount == 0)
+        {
+            <div class="empty-state reveal">
+                <div class="empty-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                </div>
+                <h3>@(q.IsFiltered ? "Bu filtreye uyan proje yok" : "Projeler yolda")</h3>
+                <p class="muted">@(q.IsFiltered ? "Başka bir kategori ya da teknoloji seçmeyi dene." : "Yakında burada çalışmalarımı paylaşacağım.")</p>
+            </div>
+        }
+        else
+        {
+            <div class="project-grid">
+                @foreach (var project in list.Items)
+                {
+                    <partial name="_ProjectCard" model="project" />
+                }
+            </div>
+
+            @if (list.TotalPages > 1)
+            {
+                <nav class="pager" aria-label="Sayfalar">
+                    @if (list.HasPrevious)
+                    {
+                        <a class="btn btn-ghost" href="@FilterUrl(q.Category, q.Technology, list.Page - 1)" rel="prev">← Önceki</a>
+                    }
+                    <span class="muted small">Sayfa @list.Page / @list.TotalPages</span>
+                    @if (list.HasNext)
+                    {
+                        <a class="btn btn-ghost" href="@FilterUrl(q.Category, q.Technology, list.Page + 1)" rel="next">Sonraki →</a>
+                    }
+                </nav>
+            }
+        }
+    </div>
+</section>

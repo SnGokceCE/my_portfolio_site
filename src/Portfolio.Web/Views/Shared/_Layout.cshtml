@@ -1,25 +1,46 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var title = ViewData["Title"] is string t ? $"{t} · Portfolyo" : "Portfolyo";
+    var description = ViewData["Description"] as string ?? "Projelerim, deneyimlerim ve yazılarım.";
+    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var canonical = baseUrl + Context.Request.Path;
+    var ogImage = ViewData["OgImage"] is string image ? baseUrl + image : null;
+    var navActive = ViewData["NavActive"] as string;
+}
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <partial name="_ThemeHead" />
-    <title>@(ViewData["Title"] is string title ? $"{title} · Portfolyo" : "Portfolyo")</title>
-    <meta name="description" content="@(ViewData["Description"] ?? "Projelerim, deneyimlerim ve yazılarım.")" />
+    <title>@title</title>
+    <meta name="description" content="@description" />
+    <link rel="canonical" href="@canonical" />
+    <meta property="og:site_name" content="Portfolyo" />
+    <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
+    <meta property="og:title" content="@title" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:url" content="@canonical" />
+    <meta property="og:locale" content="tr_TR" />
+    @if (ogImage is not null)
+    {
+        <meta property="og:image" content="@ogImage" />
+        <meta name="twitter:card" content="summary_large_image" />
+    }
 </head>
 <body>
     <a class="skip-link" href="#main">İçeriğe geç</a>
 
     <header class="site-header" data-header>
         <div class="container header-inner">
-            <a class="brand" asp-controller="Home" asp-action="Index">
+            <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
                 <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
                 <span class="brand-text">portfolyo</span>
             </a>
 
             <nav class="site-nav" id="site-nav" data-nav aria-label="Ana menü">
                 <a href="/#hakkimda">Hakkımda</a>
-                <a href="/#projeler">Projeler</a>
+                <a asp-area="" asp-controller="Projects" asp-action="Index" class="@(navActive == "projects" ? "active" : "")" aria-current="@(navActive == "projects" ? "page" : null)">Projeler</a>
                 <a href="/#deneyim">Deneyim</a>
-                <a href="/#iletisim">İletişim</a>
+                <a href="/#yetenekler">Yetenekler</a>
+                <a href="#iletisim">İletişim</a>
             </nav>
 
             <div class="header-actions">

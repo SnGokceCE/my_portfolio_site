@@ -29,7 +29,8 @@ internal sealed class ExperienceService(IApplicationDbContext db, IValidator<Exp
             .OrderBy(e => e.EndDate != null)
             .ThenByDescending(e => e.StartDate)
             .ThenBy(e => e.SortOrder)
-            .Select(e => new ExperienceListItem(e.Id, e.Type, e.Title, e.Organization, e.Location, e.StartDate, e.EndDate))
+            .Select(e => new ExperienceListItem(
+                e.Id, e.Type, e.Title, e.Organization, e.Location, e.StartDate, e.EndDate, e.Description, e.Url))
             .ToListAsync(cancellationToken);
 
     public async Task<ExperienceInput?> GetForEditAsync(Guid id, CancellationToken cancellationToken = default) =>

@@ -26,7 +26,33 @@ public static class DisplayText
     public static string Period(DateOnly start, DateOnly? end) =>
         $"{MonthYear(start)} – {(end is { } e ? MonthYear(e) : "Devam ediyor")}";
 
+    /// <summary>"Mart 2026 – Haziran 2026"; bitiş yoksa "Mart 2026 – devam ediyor". Tarih yoksa null.</summary>
+    public static string? ProjectPeriod(DateOnly? start, DateOnly? end) => (start, end) switch
+    {
+        ({ } s, { } e) when s.Year == e.Year && s.Month == e.Month => MonthYear(s),
+        ({ } s, { } e) => $"{MonthYear(s)} – {MonthYear(e)}",
+        ({ } s, null) => $"{MonthYear(s)} – devam ediyor",
+        (null, { } e) => MonthYear(e),
+        _ => null
+    };
+
+    /// <summary>İki tarih arasındaki süre, ör. "1 yıl 3 ay". Bitiş boşsa bugüne kadar hesaplanır.</summary>
+    public static string Duration(DateOnly start, DateOnly? end, DateOnly today)
+    {
+        var last = end ?? today;
+        var months = Math.Max(1, ((last.Year - start.Year) * 12) + last.Month - start.Month + 1);
+        var (years, rest) = (months / 12, months % 12);
+        return (years, rest) switch
+        {
+            (0, _) => $"{rest} ay",
+            (_, 0) => $"{years} yıl",
+            _ => $"{years} yıl {rest} ay"
+        };
+    }
+
     public static string Date(DateTimeOffset value) => value.ToLocalTime().ToString("d MMM yyyy, HH:mm", Turkish);
+
+    public static string LongDate(DateTimeOffset value) => value.ToLocalTime().ToString("d MMMM yyyy", Turkish);
 
     public static string Level(int level) => level switch
     {

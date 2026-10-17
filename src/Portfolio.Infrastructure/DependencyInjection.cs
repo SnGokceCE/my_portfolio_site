@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Portfolio.Application.Common.Interfaces;
+using Portfolio.Infrastructure.Content;
 using Portfolio.Infrastructure.Identity;
 using Portfolio.Infrastructure.Persistence;
 using Portfolio.Infrastructure.Persistence.Interceptors;
@@ -38,6 +39,9 @@ public static class DependencyInjection
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+
+        services.AddMemoryCache();
+        services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
 
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.AddSingleton<LocalFileStorage>();

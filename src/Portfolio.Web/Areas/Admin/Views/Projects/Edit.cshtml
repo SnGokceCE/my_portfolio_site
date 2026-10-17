@@ -100,6 +100,12 @@
             </label>
             <p class="hint">Taslaklar ziyaretçilere görünmez. Öne çıkan projeler ana sayfada gösterilir.</p>
             <button type="submit" class="btn btn-primary btn-block">@(Model.IsNew ? "Projeyi oluştur" : "Değişiklikleri kaydet")</button>
+            @if (!Model.IsNew)
+            {
+                <a class="btn btn-ghost btn-block" asp-area="" asp-controller="Projects" asp-action="Detail" asp-route-slug="@Model.Input.Slug" target="_blank">
+                    @(Model.Input.IsPublished ? "Sitede görüntüle ↗" : "Önizle ↗")
+                </a>
+            }
             <a class="btn btn-ghost btn-block" asp-action="Index">Listeye dön</a>
         </section>
 

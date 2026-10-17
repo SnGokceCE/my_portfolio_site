@@ -5,6 +5,7 @@ using Portfolio.Application.Categories;
 using Portfolio.Application.Dashboard;
 using Portfolio.Application.Experiences;
 using Portfolio.Application.Projects;
+using Portfolio.Application.Public;
 using Portfolio.Application.SiteProfiles;
 using Portfolio.Application.Skills;
 
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<ISkillService, SkillService>();
         services.AddScoped<IExperienceService, ExperienceService>();
         services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<IPublicProjectQueries, PublicProjectQueries>();
 
         return services;
     }

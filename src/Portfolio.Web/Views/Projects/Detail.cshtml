@@ -1,0 +1,174 @@
+@model ProjectDetail
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["Description"] = Model.Summary;
+    ViewData["OgImage"] = Model.CoverImageUrl;
+    ViewData["OgType"] = "article";
+    ViewData["NavActive"] = "projects";
+    var period = DisplayText.ProjectPeriod(Model.StartedOn, Model.CompletedOn);
+}
+
+@if (!Model.IsPublished)
+{
+    <div class="preview-banner" role="status">
+        <div class="container">
+            <strong>Taslak önizleme</strong> — bu proje henüz yayımlanmadı, yalnızca sen görüyorsun.
+            <a class="link" asp-area="Admin" asp-controller="Projects" asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a>
+        </div>
+    </div>
+}
+
+<article class="project-detail">
+    <header class="page-hero project-hero">
+        <div class="container narrow-wide">
+            <nav class="breadcrumb reveal" aria-label="Konum">
+                <a asp-controller="Projects" asp-action="Index">Projeler</a>
+                @if (Model.CategoryName is not null)
+                {
+                    <span aria-hidden="true">/</span>
+                    <a asp-controller="Projects" asp-action="Index" asp-route-kategori="@Model.CategorySlug">@Model.CategoryName</a>
+                }
+            </nav>
+
+            <h1 class="reveal">@Model.Title</h1>
+            <p class="lead muted reveal">@Model.Summary</p>
+
+            <div class="detail-meta reveal">
+                @if (period is not null)
+                {
+                    <span>
+                        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                        @period
+                    </span>
+                }
+                @if (!Model.Body.IsEmpty)
+                {
+                    <span>
+                        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                        @Model.Body.ReadingMinutes dk okuma
+                    </span>
+                }
+            </div>
+
+            @if (Model.RepositoryUrl is not null || Model.LiveUrl is not null)
+            {
+                <div class="hero-actions reveal">
+                    @if (Model.LiveUrl is not null)
+                    {
+                        <a class="btn btn-primary" href="@Model.LiveUrl" target="_blank" rel="noopener">Canlı görüntüle ↗</a>
+                    }
+                    @if (Model.RepositoryUrl is not null)
+                    {
+                        <a class="btn btn-ghost" href="@Model.RepositoryUrl" target="_blank" rel="noopener">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6" /></svg>
+                            Kaynak kod
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </header>
+
+    @if (Model.CoverImageUrl is not null)
+    {
+        <div class="container narrow-wide">
+            <figure class="detail-cover reveal">
+                <img src="@Model.CoverImageUrl" alt="@Model.Title kapak görseli" style="view-transition-name: cover-@Model.Slug" />
+            </figure>
+        </div>
+    }
+
+    <div class="container narrow-wide detail-layout">
+        <div class="detail-content">
+            @if (Model.Body.IsEmpty)
+            {
+                <p class="muted">Bu proje için henüz detaylı bir yazı eklenmedi.</p>
+            }
+            else
+            {
+                <div class="prose">@Html.Raw(Model.Body.Html)</div>
+            }
+        </div>
+
+        <aside class="detail-aside">
+            @if (Model.Body.Headings.Count >= 2)
+            {
+                <nav class="toc card" aria-label="İçindekiler" data-toc>
+                    <p class="eyebrow">İçindekiler</p>
+                    <ol>
+                        @foreach (var h in Model.Body.Headings)
+                        {
+                            <li class="toc-l@(h.Level)"><a href="#@h.Id">@h.Text</a></li>
+                        }
+                    </ol>
+                </nav>
+            }
+
+            @if (Model.Skills.Count > 0)
+            {
+                <section class="card aside-card">
+                    <p class="eyebrow">Teknolojiler</p>
+                    <ul class="tech-list">
+                        @foreach (var skill in Model.Skills)
+                        {
+                            <li><a asp-controller="Projects" asp-action="Index" asp-route-teknoloji="@skill">@skill</a></li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            @if (Model.PublishedAt is { } published)
+            {
+                <p class="muted small aside-note">
+                    @DisplayText.LongDate(published) tarihinde yayımlandı
+                    @if ((Model.LastModified - published).TotalDays >= 1)
+                    {
+                        <br /><span>Son güncelleme: @DisplayText.LongDate(Model.LastModified)</span>
+                    }
+                </p>
+            }
+        </aside>
+    </div>
+
+    @if (Model.Previous is not null || Model.Next is not null)
+    {
+        <nav class="container narrow-wide prev-next" aria-label="Diğer projeler">
+            @if (Model.Previous is { } prev)
+            {
+                <a class="card prev" asp-action="Detail" asp-route-slug="@prev.Slug" rel="prev">
+                    <span class="muted small">← Önceki proje</span>
+                    <strong>@prev.Title</strong>
+                </a>
+            }
+            else
+            {
+                <span></span>
+            }
+            @if (Model.Next is { } next)
+            {
+                <a class="card next" asp-action="Detail" asp-route-slug="@next.Slug" rel="next">
+                    <span class="muted small">Sonraki proje →</span>
+                    <strong>@next.Title</strong>
+                </a>
+            }
+        </nav>
+    }
+</article>
+
+@if (Model.Related.Count > 0)
+{
+    <section class="section section-alt">
+        <div class="container">
+            <header class="section-head reveal">
+                <p class="eyebrow">Keşfetmeye devam et</p>
+                <h2>Diğer projeler</h2>
+            </header>
+            <div class="project-grid">
+                @foreach (var project in Model.Related)
+                {
+                    <partial name="_ProjectCard" model="project" />
+                }
+            </div>
+        </div>
+    </section>
+}

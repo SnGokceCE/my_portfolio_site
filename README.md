@@ -10,6 +10,7 @@ Projelerimi, deneyimlerimi ve yazılarımı sergileyen, içeriği kendi yönetim
 | Veri | Entity Framework Core 10, PostgreSQL 17, snake_case adlandırma |
 | Kimlik | ASP.NET Core Identity (çerez tabanlı, rol: `Admin`, hesap kilitleme) |
 | Doğrulama | FluentValidation (Türkçe mesajlar) + domain seviyesinde koruma |
+| İçerik | Markdig (Markdown), HtmlSanitizer (XSS koruması), IMemoryCache |
 | Test | xUnit, EF Core InMemory, FakeTimeProvider |
 | Altyapı | Docker, Docker Compose, sağlık kontrolü (`/health`) |
 
@@ -38,6 +39,9 @@ Web  ──►  Infrastructure  ──►  Application  ──►  Domain
 - **Result deseni:** Servisler beklenen hataları (geçersiz giriş, bulunamayan kayıt) istisna fırlatmak yerine `Result` ile döndürür; alan bazlı hatalar doğrudan formdaki ilgili alanın altında gösterilir.
 - **Çift katmanlı doğrulama:** FluentValidation kullanıcı dostu mesajlar üretir; domain varlıkları yine de kendi kurallarını korur, veritabanında da `CHECK` kısıtları ve benzersiz indeksler bulunur.
 - **Güvenli dosya yükleme:** Görsel türü dosya adından değil içeriğin ilk baytlarından (magic number) tespit edilir, dosya adı rastgele üretilir, `X-Content-Type-Options: nosniff` ile sunulur ve silmede klasör dışına çıkma (path traversal) engellenir.
+- **Güvenli Markdown:** Proje içerikleri Markdown ile yazılır. Ham HTML kapalıdır, üretilen HTML ayrıca HtmlSanitizer'dan geçer (`javascript:` bağlantıları ve `onclick` gibi öznitelikler temizlenir). Başlıklardan otomatik içindekiler listesi ve okuma süresi çıkarılır.
+- **Taslak önizleme:** Yayımlanmamış projeler ziyaretçiye 404 döner; admin aynı adreste "Taslak önizleme" bandıyla görür.
+- **Aşamalı geliştirme:** Animasyonlar JavaScript ile eklenir ama içerik hiçbir koşulda betiğe bağımlı olarak gizli kalmaz; `prefers-reduced-motion` desteklenir.
 - **Güvenlik:** CSRF koruması (`ValidateAntiForgeryToken`), açık yönlendirme koruması, 5 hatalı denemede 15 dk hesap kilidi, `HttpOnly` çerez.
 
 ## Çalıştırma
@@ -60,7 +64,7 @@ dotnet tool restore
 dotnet run --project src/Portfolio.Web
 ```
 
-Site: <http://localhost:5011> · Yönetim paneli: <http://localhost:5011/admin>
+Site: <http://localhost:5011> · Projeler: <http://localhost:5011/projeler> · Yönetim paneli: <http://localhost:5011/admin>
 
 Geliştirme ortamındaki admin giriş bilgileri `src/Portfolio.Web/appsettings.Development.json` dosyasındaki `Seed` bölümündedir.
 
@@ -88,7 +92,7 @@ dotnet ef migrations add <Ad> -p src/Portfolio.Infrastructure -s src/Portfolio.W
 
 - [x] **1. İskelet:** Katmanlı mimari, PostgreSQL, Identity, Docker, tema ve temel düzen
 - [x] **2. İçerik modeli ve admin paneli:** Projeler, deneyimler, yetenekler için CRUD, görsel yükleme
-- [ ] **3. Ziyaretçi sitesi:** Proje listesi ve filtreleme, detay sayfaları, zaman çizelgesi
+- [x] **3. Ziyaretçi sitesi:** Proje listesi ve filtreleme, detay sayfaları, zaman çizelgesi
 - [ ] **4. Blog ve iletişim:** Markdown blog, iletişim formu, spam koruması, e-posta bildirimi
 - [ ] **5. Ekstralar:** Türkçe/İngilizce, SEO (sitemap, Open Graph), GitHub API entegrasyonu, ziyaret istatistikleri
 - [ ] **6. Kalite ve yayın:** Entegrasyon testleri, GitHub Actions CI, yayına alma

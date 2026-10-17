@@ -1,0 +1,54 @@
+@model ProjectCard
+@{
+    const int maxChips = 4;
+    var period = DisplayText.ProjectPeriod(Model.StartedOn, Model.CompletedOn);
+}
+
+<article class="project-card reveal">
+    <div class="project-cover">
+        @if (Model.CoverImageUrl is not null)
+        {
+            <img src="@Model.CoverImageUrl" alt="" loading="lazy" style="view-transition-name: cover-@Model.Slug" />
+        }
+        else
+        {
+            <div class="project-cover-empty" aria-hidden="true"><span>@Model.Title[..1]</span></div>
+        }
+        @if (Model.IsFeatured)
+        {
+            <span class="featured-badge">★ Öne çıkan</span>
+        }
+    </div>
+
+    <div class="project-body">
+        <div class="project-meta">
+            @if (Model.CategoryName is not null)
+            {
+                <span class="eyebrow">@Model.CategoryName</span>
+            }
+            @if (period is not null)
+            {
+                <span class="muted small">@period</span>
+            }
+        </div>
+
+        <h3 class="project-title">
+            <a asp-controller="Projects" asp-action="Detail" asp-route-slug="@Model.Slug" class="stretched-link">@Model.Title</a>
+        </h3>
+        <p class="project-summary muted">@Model.Summary</p>
+
+        @if (Model.Skills.Count > 0)
+        {
+            <ul class="tech-list" aria-label="Kullanılan teknolojiler">
+                @foreach (var skill in Model.Skills.Take(maxChips))
+                {
+                    <li>@skill</li>
+                }
+                @if (Model.Skills.Count > maxChips)
+                {
+                    <li class="more">+@(Model.Skills.Count - maxChips)</li>
+                }
+            </ul>
+        }
+    </div>
+</article>

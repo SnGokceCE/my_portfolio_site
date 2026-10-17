@@ -11,7 +11,9 @@ public sealed record ExperienceListItem(
     string Organization,
     string? Location,
     DateOnly StartDate,
-    DateOnly? EndDate);
+    DateOnly? EndDate,
+    string? Description,
+    string? Url);
 
 public sealed class ExperienceInput
 {

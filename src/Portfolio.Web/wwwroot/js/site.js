@@ -57,7 +57,42 @@
         }, { threshold: 0.12 });
 
         belowFold.forEach((element) => observer.observe(element));
+
+        // Yedek: çapalı bağlantı (/#deneyim) ya da yumuşak kaydırma sonrası gözlemci gecikirse,
+        // kaydırma durduğunda görünür alandakileri doğrudan aç. Hepsi açılınca dinleyici kaldırılır.
+        let pending = belowFold;
+        let timer = 0;
+        const revealInView = () => {
+            pending = pending.filter((element) => {
+                const rect = element.getBoundingClientRect();
+                const inView = rect.top < window.innerHeight && rect.bottom > 0;
+                if (inView) element.classList.add("visible");
+                return !inView && !element.classList.contains("visible");
+            });
+            if (!pending.length) window.removeEventListener("scroll", onScrollEnd);
+        };
+        const onScrollEnd = () => {
+            clearTimeout(timer);
+            timer = setTimeout(revealInView, 150);
+        };
+        window.addEventListener("scroll", onScrollEnd, { passive: true });
+        window.addEventListener("load", onScrollEnd);
     } else {
         belowFold.forEach((element) => element.classList.add("visible"));
+    }
+
+    // --- İçindekiler: okunmakta olan başlığı vurgula ---
+    const toc = document.querySelector("[data-toc]");
+    if (toc && "IntersectionObserver" in window) {
+        const links = new Map([...toc.querySelectorAll("a")].map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+        const headings = [...links.keys()].map((id) => document.getElementById(id)).filter(Boolean);
+        const setActive = (id) => links.forEach((a, key) => a.classList.toggle("active", key === id));
+
+        const spy = new IntersectionObserver((entries) => {
+            const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            if (visible.length) setActive(visible[0].target.id);
+        }, { rootMargin: "-80px 0px -65% 0px" });
+
+        headings.forEach((h) => spy.observe(h));
     }
 })();
