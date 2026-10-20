@@ -112,7 +112,7 @@ jobs:
 
       # Pull request'lerde imaj yalnızca derlenir (Dockerfile bozulmasın diye); main'de yayımlanır.
       - name: Derle ve yayımla
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: src/Portfolio.Web/Dockerfile
