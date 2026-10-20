@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    name: Derle ve test et
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: NuGet önbelleği
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Paketleri geri yükle
+        run: dotnet restore Portfolio.slnx
+
+      - name: Derle (uyarılar hata sayılır)
+        run: dotnet build Portfolio.slnx -c Release --no-restore
+
+      - name: Bilinen güvenlik açığı olan paket var mı?
+        run: |
+          dotnet list Portfolio.slnx package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
+          if grep -q -i "has the following vulnerable packages" vulnerable.txt; then
+            echo "::error::Güvenlik açığı olan paket bulundu."
+            exit 1
+          fi
+
+      - name: Birim testleri
+        run: >
+          dotnet test tests/Portfolio.UnitTests -c Release --no-build
+          --logger "trx;LogFileName=unit.trx" --collect:"XPlat Code Coverage" --results-directory test-results
+
+      # Entegrasyon testleri Testcontainers ile gerçek bir PostgreSQL konteyneri açar (runner'da Docker hazır).
+      - name: Entegrasyon testleri
+        run: >
+          dotnet test tests/Portfolio.IntegrationTests -c Release --no-build
+          --logger "trx;LogFileName=integration.trx" --collect:"XPlat Code Coverage" --results-directory test-results
+
+      - name: Kapsam raporu
+        if: always()
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:"test-results/**/coverage.cobertura.xml" \
+            -targetdir:coverage \
+            -reporttypes:"MarkdownSummaryGithub;HtmlInline" \
+            -classfilters:"-*.Migrations.*"
+          cat coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test sonuçlarını sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            test-results/**/*.trx
+            coverage/
+          retention-days: 14
+
+  docker:
+    name: Docker imajı
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: GitHub Container Registry'ye giriş
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Etiketler
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=short
+
+      # Pull request'lerde imaj yalnızca derlenir (Dockerfile bozulmasın diye); main'de yayımlanır.
+      - name: Derle ve yayımla
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Portfolio.Web/Dockerfile
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

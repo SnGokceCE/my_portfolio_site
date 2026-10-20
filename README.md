@@ -1,4 +1,4 @@
-# Portfolyo
+﻿# Portfolyo
 
 Projelerimi, deneyimlerimi ve yazılarımı sergileyen, içeriği kendi yönetim panelinden yönetilen kişisel portfolyo sitesi. Staj projesi olarak geliştirilmektedir.
 
@@ -11,13 +11,16 @@ Projelerimi, deneyimlerimi ve yazılarımı sergileyen, içeriği kendi yönetim
 | Kimlik | ASP.NET Core Identity (çerez tabanlı, rol: `Admin`, hesap kilitleme) |
 | Doğrulama | FluentValidation (Türkçe mesajlar) + domain seviyesinde koruma |
 | İçerik | Markdig (Markdown), HtmlSanitizer (XSS koruması), IMemoryCache |
-| Test | xUnit, EF Core InMemory, FakeTimeProvider |
+| Test | xUnit, EF Core InMemory, FakeTimeProvider; entegrasyon: WebApplicationFactory + Testcontainers (gerçek PostgreSQL), AngleSharp |
 | E-posta | MailKit (SMTP), `Channel<T>` tabanlı kuyruk + arka plan servisi, geliştirmede Mailpit |
 | Çoklu dil | Türkçe/İngilizce, `/en` ön eki, JSON tabanlı yerelleştirici, içerik için isteğe bağlı İngilizce alanlar |
 | SEO | Çok dilli `sitemap.xml` (hreflang), `robots.txt`, JSON-LD (Person, WebSite, BlogPosting, SoftwareSourceCode, BreadcrumbList), Open Graph |
 | Entegrasyon | GitHub REST API (tipli `HttpClient` + `Microsoft.Extensions.Http.Resilience`, önbellek) |
 | İstatistik | Çerezsiz, IP saklamayan ziyaret istatistikleri, sunucu tarafında çizilen SVG grafikler |
+| Güvenlik | Nonce'lu CSP, X-Frame-Options, nosniff, Referrer/Permissions-Policy, HSTS, CSRF, hesap kilitleme, istek sınırı |
 | Altyapı | Docker, Docker Compose, sağlık kontrolü (`/health`), ASP.NET Core Rate Limiting |
+| CI/CD | GitHub Actions (derleme, güvenlik açığı taraması, testler, kapsam raporu, GHCR'ye imaj), Dependabot |
+| Yayın | Docker Compose + Caddy (otomatik HTTPS), yedekleme betiği — bkz. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 
 ## Mimari
 
@@ -110,6 +113,23 @@ Canlı ortamda ortam değişkenleriyle verilir (`__` bölüm ayırıcıdır):
 dotnet test
 ```
 
+İki test projesi vardır:
+
+- `tests/Portfolio.UnitTests` — domain kuralları, doğrulayıcılar, servisler (bellek içi veritabanı), Markdown güvenliği,
+  dosya imzası tespiti, GitHub istemcisi (sahte HTTP), istatistik sınıflandırıcıları ve bir **çeviri kalite kapısı**
+  (görünümlerdeki her metnin `en.json`'da karşılığı olmalı).
+- `tests/Portfolio.IntegrationTests` — uygulamanın tamamı bellekte, **gerçek bir PostgreSQL konteynerine** karşı çalışır
+  (Testcontainers; Docker açık olmalı). Admin girişi, içerik oluşturup sitede/sitemap'te görme, taslak gizliliği,
+  CSRF, güvenlik başlıkları, iletişim formunun spam katmanları, istek sınırı ve anonim ziyaret kaydı uçtan uca denenir.
+
+### Sürekli entegrasyon ve yayına alma
+
+Her push ve pull request'te GitHub Actions; derler (uyarılar hata sayılır), bilinen güvenlik açığı olan paket
+olup olmadığını denetler, iki test projesini çalıştırır, kapsam raporunu iş özetine ekler ve Docker imajını derler.
+`main` dalında imaj `ghcr.io/<kullanıcı>/<depo>` adresine yayımlanır.
+
+Sunucuya kurulum, HTTPS, güncelleme ve yedekleme adımları için: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
+
 ### Yeni migration ekleme
 
 ```bash
@@ -123,4 +143,4 @@ dotnet ef migrations add <Ad> -p src/Portfolio.Infrastructure -s src/Portfolio.W
 - [x] **3. Ziyaretçi sitesi:** Proje listesi ve filtreleme, detay sayfaları, zaman çizelgesi
 - [x] **4. Blog ve iletişim:** Markdown blog, iletişim formu, spam koruması, e-posta bildirimi
 - [x] **5. Ekstralar:** Türkçe/İngilizce, SEO (sitemap, Open Graph), GitHub API entegrasyonu, ziyaret istatistikleri
-- [ ] **6. Kalite ve yayın:** Entegrasyon testleri, GitHub Actions CI, yayına alma
+- [x] **6. Kalite ve yayın:** Entegrasyon testleri, GitHub Actions CI, yayına alma

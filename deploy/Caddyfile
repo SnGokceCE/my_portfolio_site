@@ -1,0 +1,21 @@
+# Caddy: otomatik HTTPS (Let's Encrypt), HTTP→HTTPS yönlendirme ve ters vekil (reverse proxy).
+{$DOMAIN} {
+	reverse_proxy web:8080 {
+		# Uygulama ayakta değilse istek gönderme; /health veritabanını da kontrol eder.
+		health_uri /health
+		health_interval 30s
+	}
+
+	# Not: HTML yanıtları bilerek sıkıştırılmıyor (CSRF jetonları + HTTPS sıkıştırma = BREACH riski).
+	# CSS/JS dosyaları uygulama tarafından önceden sıkıştırılmış olarak sunuluyor.
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# www.alanadi.com → alanadi.com
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

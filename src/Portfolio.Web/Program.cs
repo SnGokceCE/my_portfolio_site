@@ -24,6 +24,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
 });
 
+// Türkçe karakterler HTML'de "&#x131;" gibi kodlanmasın (okunabilir kaynak, daha küçük sayfa).
+// <, >, & ve tırnaklar yine her zaman kaçırılır; XSS koruması değişmez.
+builder.Services.Configure<Microsoft.Extensions.WebEncoders.WebEncoderOptions>(options =>
+    options.TextEncoderSettings = new System.Text.Encodings.Web.TextEncoderSettings(System.Text.Unicode.UnicodeRanges.All));
 builder.Services.AddSiteLocalization();
 builder.Services.AddPortfolioRateLimiting();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -52,6 +56,7 @@ if (app.Configuration.GetValue("Database:MigrateOnStartup", defaultValue: app.En
 }
 
 app.UseForwardedHeaders();
+app.UseSecurityHeaders();
 
 app.UseCulturePrefix();
 app.UseSiteLocalization();

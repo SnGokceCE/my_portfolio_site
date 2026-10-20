@@ -7,18 +7,24 @@ public static class RateLimitPolicies
 {
     public const string Contact = "contact";
 
-    /// <summary>İletişim formu: aynı IP'den 10 dakikada en fazla 5 gönderim.</summary>
+    /// <summary>Yapılandırma anahtarı; varsayılan: aynı IP'den 10 dakikada 5 gönderim.</summary>
+    public const string ContactPermitLimitKey = "RateLimit:ContactPermitLimit";
+
     public static IServiceCollection AddPortfolioRateLimiting(this IServiceCollection services) =>
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddPolicy(Contact, context => RateLimitPartition.GetFixedWindowLimiter(
-                partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                factory: _ => new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = 5,
-                    Window = TimeSpan.FromMinutes(10),
-                    QueueLimit = 0
-                }));
+            options.AddPolicy(Contact, context =>
+            {
+                var limit = context.RequestServices.GetRequiredService<IConfiguration>().GetValue(ContactPermitLimitKey, 5);
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = limit,
+                        Window = TimeSpan.FromMinutes(10),
+                        QueueLimit = 0
+                    });
+            });
         });
 }

@@ -481,5 +481,9 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# Y�klenen dosyalar
+# Yüklenen dosyalar
 src/Portfolio.Web/wwwroot/uploads/
+
+# Üretim gizli bilgileri ve yedekler
+deploy/.env
+deploy/backups/
