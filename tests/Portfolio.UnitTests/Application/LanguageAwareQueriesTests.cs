@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Portfolio.Application.Common.Interfaces;
 using Portfolio.Application.Experiences;
@@ -81,6 +82,26 @@ public sealed class LanguageAwareQueriesTests : IAsyncLifetime
 
         Assert.Equal("Yazılım geliştirici", input.Headline);
         Assert.Equal("Software developer", input.HeadlineEn);
+    }
+
+    [Fact]
+    public async Task Skills_ShowEnglishNameAndGroup_AndFilterAcceptsEnglishName()
+    {
+        var skill = new Skill("Makine öğrenmesi", "Yapay Zeka ve Veri", level: 3);
+        skill.UpdateEnglish("Machine learning", "Artificial Intelligence & Data");
+        var project = await _english.Db.Projects.FirstAsync(p => p.Slug == "gorev-yoneticisi");
+        project.SetSkills([skill]);
+        _english.Db.Skills.Add(skill);
+        await _english.Db.SaveChangesAsync();
+
+        var listed = (await _english.Get<Portfolio.Application.Skills.ISkillService>().ListAsync()).Single(s => s.Id == skill.Id);
+        var catalog = await _english.Get<IPublicProjectQueries>().GetCatalogAsync(new ProjectCatalogQuery(Technology: "Machine learning"));
+
+        Assert.Equal("Machine learning", listed.Name);
+        Assert.Equal("Artificial Intelligence & Data", listed.Group);
+        Assert.Equal("Task Manager", Assert.Single(catalog.Projects.Items).Title);
+        Assert.Equal(["Machine learning"], catalog.Projects.Items[0].Skills);
+        Assert.Contains(catalog.Technologies, t => t.Value == "Machine learning");
     }
 
     public Task DisposeAsync() => _english.DisposeAsync().AsTask();

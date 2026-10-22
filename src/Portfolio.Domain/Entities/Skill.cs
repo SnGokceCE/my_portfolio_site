@@ -37,6 +37,17 @@ public sealed class Skill : BaseEntity
 
     public IReadOnlyCollection<Project> Projects => _projects;
 
+    /// <summary>İngilizce sayfada gösterilen ad (ör. "Makine öğrenmesi" → "Machine learning"). Boşsa Türkçe ad kullanılır.</summary>
+    public string? NameEn { get; private set; }
+
+    public string? GroupEn { get; private set; }
+
+    public void UpdateEnglish(string? nameEn, string? groupEn)
+    {
+        NameEn = Guard.Optional(nameEn, nameof(NameEn), NameMaxLength);
+        GroupEn = Guard.Optional(groupEn, nameof(GroupEn), GroupMaxLength);
+    }
+
     public void Update(string name, string? group, int level, int sortOrder)
     {
         Name = Guard.Required(name, nameof(Name), NameMaxLength);

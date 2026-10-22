@@ -15,6 +15,8 @@ public interface ISkillService
 
     Task<IReadOnlyList<string>> ListGroupsAsync(CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<string>> ListEnglishGroupsAsync(CancellationToken cancellationToken = default);
+
     Task<SkillInput?> GetForEditAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<Result<Guid>> CreateAsync(SkillInput input, CancellationToken cancellationToken = default);
@@ -24,12 +26,25 @@ public interface ISkillService
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }
 
-internal sealed class SkillService(IApplicationDbContext db, IValidator<SkillInput> validator) : ISkillService
+internal sealed class SkillService(
+    IApplicationDbContext db,
+    IValidator<SkillInput> validator,
+    ICurrentLanguage language) : ISkillService
 {
-    public async Task<IReadOnlyList<SkillListItem>> ListAsync(CancellationToken cancellationToken = default) =>
-        await Ordered(db.Skills.AsNoTracking())
-            .Select(s => new SkillListItem(s.Id, s.Name, s.Group, s.Level, s.SortOrder, s.Projects.Count))
+    // İngilizce sayfada çevirisi olan ad/grup İngilizce, olmayan Türkçe aslıyla gelir (yönetim paneli hep Türkçe).
+    public async Task<IReadOnlyList<SkillListItem>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        var english = language.IsEnglish;
+        return await Ordered(db.Skills.AsNoTracking())
+            .Select(s => new SkillListItem(
+                s.Id,
+                english && s.NameEn != null ? s.NameEn : s.Name,
+                english && s.GroupEn != null ? s.GroupEn : s.Group,
+                s.Level,
+                s.SortOrder,
+                s.Projects.Count))
             .ToListAsync(cancellationToken);
+    }
 
     public async Task<IReadOnlyList<SkillOption>> ListOptionsAsync(CancellationToken cancellationToken = default) =>
         await Ordered(db.Skills.AsNoTracking())
@@ -45,18 +60,39 @@ internal sealed class SkillService(IApplicationDbContext db, IValidator<SkillInp
             .OrderBy(g => g)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<string>> ListEnglishGroupsAsync(CancellationToken cancellationToken = default) =>
+        await db.Skills
+            .AsNoTracking()
+            .Where(s => s.GroupEn != null)
+            .Select(s => s.GroupEn!)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToListAsync(cancellationToken);
+
     public async Task<SkillInput?> GetForEditAsync(Guid id, CancellationToken cancellationToken = default) =>
         await db.Skills
             .AsNoTracking()
             .Where(s => s.Id == id)
-            .Select(s => new SkillInput { Name = s.Name, Group = s.Group, Level = s.Level, SortOrder = s.SortOrder })
+            .Select(s => new SkillInput
+            {
+                Name = s.Name,
+                Group = s.Group,
+                Level = s.Level,
+                SortOrder = s.SortOrder,
+                NameEn = s.NameEn,
+                GroupEn = s.GroupEn
+            })
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<Result<Guid>> CreateAsync(SkillInput input, CancellationToken cancellationToken = default)
     {
         var errors = await ValidateAsync(null, input, cancellationToken);
         Skill? skill = null;
-        errors ??= ValidationExtensions.TryApply(() => skill = new Skill(input.Name, input.Group, input.Level, input.SortOrder));
+        errors ??= ValidationExtensions.TryApply(() =>
+        {
+            skill = new Skill(input.Name, input.Group, input.Level, input.SortOrder);
+            skill.UpdateEnglish(input.NameEn, input.GroupEn);
+        });
         if (errors is not null)
         {
             return Result.Invalid<Guid>(errors);
@@ -76,7 +112,11 @@ internal sealed class SkillService(IApplicationDbContext db, IValidator<SkillInp
         }
 
         var errors = await ValidateAsync(id, input, cancellationToken)
-                     ?? ValidationExtensions.TryApply(() => skill.Update(input.Name, input.Group, input.Level, input.SortOrder));
+                     ?? ValidationExtensions.TryApply(() =>
+                     {
+                         skill.Update(input.Name, input.Group, input.Level, input.SortOrder);
+                         skill.UpdateEnglish(input.NameEn, input.GroupEn);
+                     });
         if (errors is not null)
         {
             return Result.Invalid(errors);

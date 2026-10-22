@@ -36,7 +36,8 @@ internal sealed class PublicProjectQueries(
 
         if (!string.IsNullOrWhiteSpace(query.Technology))
         {
-            projects = projects.Where(p => p.Skills.Any(s => s.Name == query.Technology));
+            // Filtre bağlantısı Türkçe ya da İngilizce adla gelebilir (dile göre üretilir).
+            projects = projects.Where(p => p.Skills.Any(s => s.Name == query.Technology || s.NameEn == query.Technology));
         }
 
         var page = await ToCards(OrderByDisplay(projects)).ToPagedListAsync(query.Page, query.PageSize, cancellationToken);
@@ -58,7 +59,7 @@ internal sealed class PublicProjectQueries(
 
         var technologies = await db.Skills
             .AsNoTracking()
-            .Select(s => new { s.Name, Count = s.Projects.Count(p => p.IsPublished) })
+            .Select(s => new { Name = english && s.NameEn != null ? s.NameEn : s.Name, Count = s.Projects.Count(p => p.IsPublished) })
             .Where(s => s.Count > 0)
             .OrderByDescending(s => s.Count).ThenBy(s => s.Name)
             .Select(s => new FilterOption(s.Name, s.Name, s.Count))
@@ -130,7 +131,8 @@ internal sealed class PublicProjectQueries(
             project.CompletedOn,
             english && project.Category?.NameEn is not null ? project.Category.NameEn : project.Category?.Name,
             project.Category?.Slug,
-            project.Skills.OrderBy(s => s.SortOrder).ThenBy(s => s.Name).Select(s => s.Name).ToList(),
+            project.Skills.OrderBy(s => s.SortOrder).ThenBy(s => s.Name)
+                .Select(s => english && s.NameEn != null ? s.NameEn : s.Name).ToList(),
             project.IsPublished,
             project.PublishedAt,
             project.UpdatedAt ?? project.CreatedAt,
@@ -161,7 +163,8 @@ internal sealed class PublicProjectQueries(
             p.CoverImageUrl,
             p.Category != null ? (english && p.Category.NameEn != null ? p.Category.NameEn : p.Category.Name) : null,
             p.Category != null ? p.Category.Slug : null,
-            p.Skills.OrderBy(s => s.SortOrder).ThenBy(s => s.Name).Select(s => s.Name).ToList(),
+            p.Skills.OrderBy(s => s.SortOrder).ThenBy(s => s.Name)
+                .Select(s => english && s.NameEn != null ? s.NameEn : s.Name).ToList(),
             p.IsFeatured,
             p.StartedOn,
             p.CompletedOn));

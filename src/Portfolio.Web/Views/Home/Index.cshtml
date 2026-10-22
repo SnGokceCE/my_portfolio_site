@@ -3,9 +3,10 @@
     var profile = Model.Profile;
     ViewData["Description"] = profile.Headline;
     var today = DateOnly.FromDateTime(DateTime.Today);
-    var skillGroups = Model.Skills.GroupBy(s => s.Group ?? L["Diğer"].Value).ToList();
+    // Gruplar, içlerindeki en küçük sıra numarasına göre dizilir; panelde verilen sıra sitede de korunur.
+    var skillGroups = Model.Skills.GroupBy(s => s.Group ?? L["Diğer"].Value).OrderBy(g => g.Min(s => s.SortOrder)).ToList();
     var english = SiteCultures.IsEnglish(Context.Request);
-    var topSkills = Model.Skills.OrderByDescending(s => s.Level).Take(3).Select(s => s.Name).ToList();
+    var topSkills = Model.Skills.OrderByDescending(s => s.Level).ThenBy(s => s.SortOrder).Take(3).Select(s => s.Name).ToList();
     var origin = $"{Context.Request.Scheme}://{Context.Request.Host}";
 }
 

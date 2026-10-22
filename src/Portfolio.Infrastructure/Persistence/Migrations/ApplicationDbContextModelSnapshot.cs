@@ -713,6 +713,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("group");
 
+                    b.Property<string>("GroupEn")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("group_en");
+
                     b.Property<int>("Level")
                         .HasColumnType("integer")
                         .HasColumnName("level");
@@ -722,6 +727,11 @@ namespace Portfolio.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("name");
+
+                    b.Property<string>("NameEn")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("name_en");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer")

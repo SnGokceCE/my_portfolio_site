@@ -26,6 +26,8 @@ internal sealed class SkillConfiguration : IEntityTypeConfiguration<Skill>
         builder.Property(s => s.Id).ValueGeneratedNever();
         builder.Property(s => s.Name).HasMaxLength(Skill.NameMaxLength).IsRequired();
         builder.Property(s => s.Group).HasMaxLength(Skill.GroupMaxLength);
+        builder.Property(s => s.NameEn).HasMaxLength(Skill.NameMaxLength);
+        builder.Property(s => s.GroupEn).HasMaxLength(Skill.GroupMaxLength);
         builder.HasIndex(s => s.Name).IsUnique();
         builder.ToTable(t => t.HasCheckConstraint("ck_skills_level", $"level BETWEEN {Skill.MinLevel} AND {Skill.MaxLevel}"));
     }

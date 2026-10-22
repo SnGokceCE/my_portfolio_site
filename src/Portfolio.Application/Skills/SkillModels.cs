@@ -16,6 +16,10 @@ public sealed class SkillInput
     public int Level { get; set; } = 3;
 
     public int SortOrder { get; set; }
+
+    public string? NameEn { get; set; }
+
+    public string? GroupEn { get; set; }
 }
 
 public sealed class SkillInputValidator : AbstractValidator<SkillInput>
@@ -25,5 +29,7 @@ public sealed class SkillInputValidator : AbstractValidator<SkillInput>
         RuleFor(x => x.Name).NotEmpty().MaximumLength(Skill.NameMaxLength).WithName("Ad");
         RuleFor(x => x.Group).MaximumLength(Skill.GroupMaxLength).WithName("Grup");
         RuleFor(x => x.Level).InclusiveBetween(Skill.MinLevel, Skill.MaxLevel).WithName("Seviye");
+        RuleFor(x => x.NameEn).MaximumLength(Skill.NameMaxLength).WithName("Ad (EN)");
+        RuleFor(x => x.GroupEn).MaximumLength(Skill.GroupMaxLength).WithName("Grup (EN)");
     }
 }

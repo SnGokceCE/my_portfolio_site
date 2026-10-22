@@ -40,6 +40,26 @@
             <span asp-validation-for="Input.Level" class="field-error"></span>
         </fieldset>
 
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Input.NameEn">İngilizce ad <span class="muted">(isteğe bağlı)</span></label>
+                <input asp-for="Input.NameEn" maxlength="@Skill.NameMaxLength" placeholder="ör. Machine learning" />
+                <span class="hint">Teknik adlarda (C#, Docker) boş bırak; iki dilde aynı görünür.</span>
+                <span asp-validation-for="Input.NameEn" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.GroupEn">İngilizce grup <span class="muted">(isteğe bağlı)</span></label>
+                <input asp-for="Input.GroupEn" list="skill-groups-en" maxlength="@Skill.GroupMaxLength" placeholder="ör. Programming Languages" />
+                <datalist id="skill-groups-en">
+                    @foreach (var g in Model.EnglishGroups)
+                    {
+                        <option value="@g"></option>
+                    }
+                </datalist>
+                <span asp-validation-for="Input.GroupEn" class="field-error"></span>
+            </div>
+        </div>
+
         <div class="field field-sm">
             <label asp-for="Input.SortOrder">Sıra</label>
             <input asp-for="Input.SortOrder" type="number" />

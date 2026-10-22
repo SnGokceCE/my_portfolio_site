@@ -69,6 +69,7 @@ public class SkillsController(ISkillService skills) : AdminController
     private async Task<SkillFormViewModel> WithGroupsAsync(SkillFormViewModel form, CancellationToken cancellationToken)
     {
         form.Groups = await skills.ListGroupsAsync(cancellationToken);
+        form.EnglishGroups = await skills.ListEnglishGroupsAsync(cancellationToken);
         return form;
     }
 }

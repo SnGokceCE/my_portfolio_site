@@ -18,6 +18,8 @@ public class FormViewModel<TInput> where TInput : new()
 public sealed class SkillFormViewModel : FormViewModel<SkillInput>
 {
     public IReadOnlyList<string> Groups { get; set; } = [];
+
+    public IReadOnlyList<string> EnglishGroups { get; set; } = [];
 }
 
 public sealed class ProjectFormViewModel : FormViewModel<ProjectInput>
