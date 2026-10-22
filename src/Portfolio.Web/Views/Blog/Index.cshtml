@@ -17,7 +17,7 @@
         <p class="muted lead reveal">
             @if (q.Tag is not null)
             {
-                <span>@Html.Raw(L["<strong>#{0}</strong> etiketli {1} yazı.", System.Net.WebUtility.HtmlEncode(q.Tag), list.TotalCount].Value)</span>
+                <span>@Html.Raw(L.Plural(list.TotalCount, "<strong>#{0}</strong> etiketli {1} yazı.", System.Net.WebUtility.HtmlEncode(q.Tag), list.TotalCount).Value)</span>
                 <a class="link" href="@BlogUrl(null)">@L["Tüm yazılar"]</a>
             }
             else

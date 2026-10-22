@@ -17,12 +17,12 @@
         <p class="muted lead reveal">
             @if (q.IsFiltered)
             {
-                <span>@Html.Raw(L["Filtreye uyan <strong>{0}</strong> proje.", list.TotalCount].Value)</span>
+                <span>@Html.Raw(L.Plural(list.TotalCount, "Filtreye uyan <strong>{0}</strong> proje.", list.TotalCount).Value)</span>
                 <a class="link" href="@FilterUrl(null, null)">@L["Filtreleri temizle"]</a>
             }
             else
             {
-                <span>@L["Üzerinde çalıştığım {0} proje; problemden çözüme, kullandığım teknolojilerle birlikte.", list.TotalCount]</span>
+                <span>@L.Plural(list.TotalCount, "Üzerinde çalıştığım {0} proje; problemden çözüme, kullandığım teknolojilerle birlikte.", list.TotalCount)</span>
             }
         </p>
     </div>
